@@ -161,7 +161,23 @@ function gotoSection(index, direction, initialOffset = 0) {
     if (currentIndex === 0 && index !== 0) {
         heroSectionActive = false;
         if (typeof stopHeroWaves === 'function') stopHeroWaves();
-        if (audioCtx) audioCtx.suspend();
+        if (audioCtx) {
+            const now = audioCtx.currentTime;
+            const FADE = 0.3; // seconds
+            // Fade out both gain channels smoothly to avoid click/pop
+            if (masterGain) {
+                masterGain.gain.cancelScheduledValues(now);
+                masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+                masterGain.gain.linearRampToValueAtTime(0, now + FADE);
+            }
+            if (sampleGain) {
+                sampleGain.gain.cancelScheduledValues(now);
+                sampleGain.gain.setValueAtTime(sampleGain.gain.value, now);
+                sampleGain.gain.linearRampToValueAtTime(0, now + FADE);
+            }
+            // Suspend after fade completes
+            setTimeout(() => { if (audioCtx) audioCtx.suspend(); }, FADE * 1000 + 50);
+        }
     } else if (index === 0) {
         heroSectionActive = true;
     }
