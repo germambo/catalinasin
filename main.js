@@ -316,8 +316,53 @@ window.addEventListener('mousemove', (e) => {
     mouse.targetY = e.clientY;
     mouse.targetStrength = 1;
 
-    // Small optimization: if we are near the canvas top/bottom center, ensure we aren't being blocked
     // (though pointer-events: none on title should handle this)
+});
+
+// Click to mute/unmute everything in the Hero section
+window.addEventListener('click', (e) => {
+    // Only trigger if we are in the hero section (first 100vh)
+    // AND we are NOT clicking on buttons, sliders, or the control panels themselves
+    if (window.scrollY > window.innerHeight) return;
+
+    // Ignore interactive elements
+    if (e.target.closest('button') ||
+        e.target.closest('input') ||
+        e.target.closest('.grain-controls') ||
+        e.target.closest('.audio-controls') ||
+        e.target.closest('.custom-player')) {
+        return;
+    }
+
+    isGlobalMuted = !isGlobalMuted;
+
+    // Visual feedback (flash icon)
+    const indicator = document.getElementById('hero-mute-indicator');
+    if (indicator) {
+        // Switch between Muted (X) and Unmuted icon paths
+        const svgElement = indicator.querySelector('svg');
+        if (svgElement) {
+            if (isGlobalMuted) {
+                // Muted icon (Volume Off + X)
+                svgElement.innerHTML = `
+                    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M23 9L17 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 9L23 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                `;
+            } else {
+                // Unmuted icon (Volume Up + Waves)
+                svgElement.innerHTML = `
+                    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                `;
+            }
+        }
+
+        indicator.classList.remove('is-visible');
+        void indicator.offsetWidth; // trigger reflow
+        indicator.classList.add('is-visible');
+    }
 });
 
 // Use visibility change or scroll as fallback to fade out
@@ -332,7 +377,7 @@ window.addEventListener('resize', resizeCanvas);
 
 // Hero wave config — all values live-editable from the control panel
 let heroWaveConfig = {
-    opacity: 0.1,   // alpha of each wave line
+    opacity: 0.14,   // alpha of each wave line
     waveCount: 43,    // number of wave lines
     deflection: 4.5,  // cursor drag strength (the "arrastre" multiplier)
     amplitude: 55,    // base wave height in px
@@ -795,22 +840,22 @@ function stopSamplePlayback() {
 // Se calcularon a partir de E1 (41.20Hz) / E2 (82.41Hz)
 const SCALES = [
     // 0: Pentatónica Menor (Graves a agudos. Sensación: Nativa/Ancestral)
-    [55.00, 65.41, 73.42, 82.41, 98.00, 110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63],
+    [55.00, 65.41, 73.42, 82.41, 98.00, 110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51],
 
     // 1: Escala Mayor (E Major. Sensación: Feliz / Épica)
-    [82.41, 92.50, 103.83, 110.00, 123.47, 138.59, 155.56, 164.81, 185.00, 207.65, 220.00, 246.94, 277.18, 311.13, 329.63],
+    [82.41, 92.50, 103.83, 110.00, 123.47, 138.59, 155.56, 164.81, 185.00, 207.65, 220.00, 246.94, 277.18, 311.13, 329.63, 369.99, 415.30, 440.00, 493.88, 554.37, 622.25, 659.25, 739.99, 830.61, 880.00, 987.77, 1108.73, 1244.51, 1318.51],
 
     // 2: Escala Menor Natural (E Minor. Sensación: Triste / Melancólica)
-    [82.41, 92.50, 98.00, 110.00, 123.47, 130.81, 146.83, 164.81, 185.00, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63],
+    [82.41, 92.50, 98.00, 110.00, 123.47, 130.81, 146.83, 164.81, 185.00, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 369.99, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 739.99, 783.99, 880.00, 987.77, 1046.50, 1174.66, 1318.51],
 
     // 3: Escala Enigmática de Verdi (C Enigmatic. Sensación: Extraña / Misteriosa / Disonante)
-    [65.41, 69.30, 82.41, 92.50, 103.83, 116.54, 123.47, 130.81, 138.59, 164.81, 185.00, 207.65, 233.08, 246.94, 261.63, 277.18, 329.63],
+    [65.41, 69.30, 82.41, 92.50, 103.83, 116.54, 123.47, 130.81, 138.59, 164.81, 185.00, 207.65, 233.08, 246.94, 261.63, 277.18, 329.63, 349.23, 415.30, 466.16, 493.88, 523.25, 554.37, 659.25, 739.99, 830.61, 932.33, 987.77, 1046.50, 1108.73, 1318.51],
 
     // 4: Escala de Tonos Enteros (Whole Tone. Sensación: Flotante / De ensueño)
-    [65.41, 73.42, 82.41, 92.50, 103.83, 116.54, 130.81, 146.83, 164.81, 185.00, 207.65, 233.08, 261.63, 293.66, 329.63],
+    [65.41, 73.42, 82.41, 92.50, 103.83, 116.54, 130.81, 146.83, 164.81, 185.00, 207.65, 233.08, 261.63, 293.66, 329.63, 370.00, 415.30, 466.16, 523.25, 587.33, 659.25, 740.00, 830.61, 932.33, 1046.50, 1174.66, 1318.51],
 
     // 5: Escala Hirajoshi (A pentatónica japonesa. Sensación: Oriental / Tensa)
-    [55.00, 61.74, 65.41, 82.41, 87.31, 110.00, 123.47, 130.81, 164.81, 174.61, 220.00, 246.94, 261.63, 329.63]
+    [55.00, 61.74, 65.41, 82.41, 87.31, 110.00, 123.47, 130.81, 164.81, 174.61, 220.00, 246.94, 261.63, 329.63, 349.23, 440.00, 493.88, 523.25, 659.25, 698.46, 880.00, 987.77, 1046.50, 1318.51]
 ];
 
 // --- Control Panel State ---
@@ -832,6 +877,9 @@ let controlConfig = {
     sVol: 1.5             // Knob S6: Sensibilidad de volumen base
 };
 
+// Array of selected rows per column for the Grid Sequencer (State 3). Null means "silence" for that step.
+const sequencerGrid = new Array(8).fill(null);
+
 // Configurar los event listeners para los knobs cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', () => {
     // Add toggle functionality for hero audio controls
@@ -846,6 +894,71 @@ document.addEventListener('DOMContentLoaded', () => {
     if (audioToggleBtn && audioControlsPanel) {
         audioToggleBtn.addEventListener('click', (e) => {
             audioControlsPanel.classList.toggle('is-collapsed');
+        });
+    }
+
+    // Toggle Sequencer Panel
+    const seqToggleBtn = document.getElementById('sequencer-toggle-btn');
+    const seqPanel = document.getElementById('sequencer-panel');
+    const seqCloseBtn = document.getElementById('sequencer-panel-close');
+    const seqGridContainer = document.getElementById('sequencer-grid');
+    const seqResetBtn = document.getElementById('seq-reset');
+
+    if (seqPanel) {
+        seqPanel.addEventListener('click', e => e.stopPropagation());
+    }
+
+    if (seqToggleBtn && seqPanel) {
+        seqToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            seqPanel.classList.toggle('is-collapsed');
+        });
+    }
+
+    if (seqCloseBtn && seqPanel) {
+        seqCloseBtn.addEventListener('click', () => {
+            seqPanel.classList.add('is-collapsed');
+        });
+    }
+
+    // Initialize the Grid 8x8 (8 steps horizontally, 8 pitch notes vertically)
+    if (seqGridContainer) {
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'seq-cell';
+                cell.dataset.col = col;
+                // Higher rows (0,1) represent higher pitches visually.
+                // We map row 0 to index 7 of the scale, row 7 to index 0 of the scale.
+                cell.dataset.row = 7 - row;
+
+                cell.addEventListener('click', () => {
+                    const colIdx = parseInt(cell.dataset.col);
+                    const rowIdx = parseInt(cell.dataset.row);
+
+                    // If clicking the already active cell, turn it off (silence step)
+                    if (sequencerGrid[colIdx] === rowIdx) {
+                        sequencerGrid[colIdx] = null;
+                        cell.classList.remove('is-active');
+                    } else {
+                        // Activate new cell and turn off siblings in same column
+                        sequencerGrid[colIdx] = rowIdx;
+                        const siblings = seqGridContainer.querySelectorAll(`.seq-cell[data-col="${colIdx}"]`);
+                        siblings.forEach(s => s.classList.remove('is-active'));
+                        cell.classList.add('is-active');
+                    }
+                });
+
+                seqGridContainer.appendChild(cell);
+            }
+        }
+    }
+
+    // Reset Sequence
+    if (seqResetBtn) {
+        seqResetBtn.addEventListener('click', () => {
+            sequencerGrid.fill(null);
+            document.querySelectorAll('.seq-cell.is-active').forEach(c => c.classList.remove('is-active'));
         });
     }
 
@@ -893,6 +1006,17 @@ document.addEventListener('DOMContentLoaded', () => {
     bindKnob('s-vol', 'sVol', true);
 });
 
+// ==========================================================================
+// AIRWOLF THEME CONSTANTS (State 2)
+// Bm progression (B, D, E, B, E, F#, E, D) - approx 130bpm
+// ==========================================================================
+// E2 = 82.41, B2 = 123.47, D3 = 146.83, E3 = 164.81, F#3 = 185.00, G3 = 196.00, A3 = 220.00
+const AIRWOLF_TUNE = [
+    // Bm pulse gallop (simplified iconic bassline/synth intro shape)
+    123.47, 123.47, 123.47, 146.83, 164.81, 123.47, 164.81, 185.00,
+    164.81, 146.83, 123.47, 123.47, 123.47, 82.41, 123.47, 146.83
+];
+
 // Called every frame from drawWaves() — updates audio to match visual state
 // Three-layer system (Option C):
 //   Layer 1: masterPhase  → ambient LFO breathing (always on)
@@ -904,15 +1028,19 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
     const now = audioCtx.currentTime;
 
     // Si no hay intervención del mouse, apagamos el audio por completo (0.0 vol)
-    // Para el sample (audioState===2) no hacemos return inmediato: dejamos que el
-    // bloque de abajo lo apague suavemente (fade del sampleGain a 0).
-    if (touchIntensity <= 0.01 && chaosNorm <= 0.01) {
+    // Para los secuenciadores y sintes (1, 2, 3, 5) NO retornamos:
+    // queremos que sigan sonando de fondo rítmicamente o al menos audibles.
+    const isSynthState = (audioState === 1 || audioState === 2 || audioState === 3 || audioState === 5);
+
+    if (touchIntensity <= 0.01 && chaosNorm <= 0.01 && !isSynthState && audioState !== 4) {
         masterGain.gain.setTargetAtTime(0, now, 0.5); // Fade out suave (sintetizador)
-        if (audioState === 2) {
-            // Apagamos el sample también cuando no hay interacción del mouse
-            if (sampleGain) sampleGain.gain.setTargetAtTime(0, now, 0.5);
-            if (bgSampleEl && !sampleSource) bgSampleEl.volume = 0;
-        }
+        return;
+    }
+
+    // Caso especial para apagar el Sample (4) cuando no hay interacción
+    if (audioState === 4 && touchIntensity <= 0.01 && chaosNorm <= 0.01) {
+        if (sampleGain) sampleGain.gain.setTargetAtTime(0, now, 0.5);
+        if (bgSampleEl && !sampleSource) bgSampleEl.volume = 0;
         return;
     }
 
@@ -938,11 +1066,12 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
     // Salto relativo continuo (Ej: -5.0 a +5.0) en base a "Salto Arpegio" (Knob 2)
     let continuousJump = horizontalWipeNorm * controlConfig.arpRange;
     let finalPitch = 220; // Default value, will be overwritten
+    let isSequencerSilenced = false;
 
     // T_pitch is usually T (smooth), but for Arpeggiator it will be instantaneous (0.01)
     let T_pitch = T;
 
-    if (audioState === 3 || audioState === 0) {
+    if (audioState === 4 || audioState === 0) {
         // --- LAYER 2: Barrido Continuo (GLIDE) ---
         let floatIndex = baseIndex + continuousJump;
 
@@ -959,8 +1088,65 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
 
         finalPitch = freqLow + (freqHigh - freqLow) * fraction;
 
+    } else if (audioState === 2) {
+        // --- LAYER 2: GRID SEQUENCER (STATE 2 - Pentagrama) ---
+        // Velocidad leída dinámicamente, con la lógica invertida: 
+        // 0.55 - valor (slider a la derecha 0.5 = arpSpeed 0.05 = RÁPIDO)
+        const speedKnob = document.getElementById('knob-seq-speed');
+        const arpSpeed = speedKnob ? (0.55 - parseFloat(speedKnob.value)) : 0.15; // seg
+
+        if (now - arpLastTime >= arpSpeed) {
+            arpStep++;
+            arpLastTime += arpSpeed;
+            // Catch-up drástico si hubo lag
+            if (now - arpLastTime > 1.0) arpLastTime = now;
+        }
+
+        let seqPos = arpStep % 8;
+        let selectedRow = sequencerGrid[seqPos]; // De 0 a 7, o null
+
+        // Actualizamos las luces de la cuadrícula
+        const seqGridContainer = document.getElementById('sequencer-grid');
+        if (seqGridContainer) {
+            // Removemos todas las clases playing-col-* usando una regex sencilla
+            seqGridContainer.className = seqGridContainer.className.replace(/\bplaying-col-\d\b/g, '').trim();
+            seqGridContainer.classList.add(`playing-col-${seqPos}`);
+        }
+
+        if (selectedRow !== null) {
+            // Obtener el índice real dentro de la escala
+            // Sumamos el salto horizontal del mouse (continuousJump) para que el mouse transporte la melodía entera
+            let activeIndex = baseIndex + selectedRow + Math.round(continuousJump);
+            activeIndex = Math.max(0, Math.min(activeIndex, currentScale.length - 1));
+            finalPitch = currentScale[activeIndex];
+        } else {
+            // Silencio en este paso
+            isSequencerSilenced = true;
+            // Para no escuchar caídas raras de pitch, mantenemos el pitch último conocido
+        }
+
+        T_pitch = 0.01; // Notas punzantes instantáneas
+
+    } else if (audioState === 3) {
+        // --- LAYER 2: AIRWOLF THEME SEQUENCER (STATE 3) ---
+        // Velocidad constante del arpegio estilo "gallop"
+        const arpSpeed = 0.13; // seg
+
+        if (now - arpLastTime >= arpSpeed) {
+            arpStep++;
+            arpLastTime += arpSpeed;
+            // Catch-up drástico si hubo lag
+            if (now - arpLastTime > 1.0) arpLastTime = now;
+        }
+
+        // Iterar constantemente sobre el arreglo de frecuencias
+        let seqPos = arpStep % AIRWOLF_TUNE.length;
+        finalPitch = AIRWOLF_TUNE[seqPos];
+
+        // Cambio instantáneo para efecto "secuenciador", no portamento
+        T_pitch = 0.01;
+
     } else if (audioState === 1) {
-        // --- LAYER 2: ARPEGIADOR RÍTMICO ---
         // Velocidad del arpegio (fija a 150ms o podría mapearse a un knob visual)
         const arpSpeed = 0.15; // seg
 
@@ -1100,20 +1286,33 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
     // Volumen condicionado a cuánto se elevó la onda verticalmente + touch
     let intensityScore = Math.min(1, verticalElevationNorm + (touchIntensity * 0.5));
 
-    if (audioState === 1 || audioState === 3 || audioState === 0) {
+    // Para el Grid Sequencer (Estado 2), aseguramos un piso de volumen 
+    // para que siga sonando aunque el usuario deje quieto el mouse o minimice el panel
+    if (audioState === 2) {
+        intensityScore = Math.max(0.6, intensityScore);
+    }
+
+    if (audioState === 1 || audioState === 2 || audioState === 3 || audioState === 5) {
         // === SINTETIZADOR ===
         let pitchDamping = 1.0;
-        if (finalPitch > 220) {
-            pitchDamping = Math.max(0.4, 1.0 - ((finalPitch - 220) / 110) * 0.6);
+        if (finalPitch > 1200) {
+            pitchDamping = Math.max(0.6, 1.0 - ((finalPitch - 1200) / 800) * 0.4);
         }
-        const masterVolTarget = intensityScore * 0.25 * pitchDamping;
+
+        let masterVolTarget = intensityScore * 0.25 * pitchDamping;
+
+        // Si el secuenciador grilla determina que hay silencio, bajamos el volumen a 0
+        if (isSequencerSilenced) {
+            masterVolTarget = 0;
+        }
 
         // Filtro dinámico: 
-        // En modo Arpegio (3) aseguramos que el filtro siempre esté por encima de la nota tocada
-        // para que no la "ahogue" si la onda visual está bajita.
+        // En modo Arpegio/Secuenciador aseguramos que el filtro siempre esté por encima de la nota tocada
+        // para que no la "ahogue" si la onda visual está bajita, y multiplicamos por 3.0 para que 
+        // las frecuencias de 8vas altas (cuando el mouse está arriba) pasen y no haya silencios.
         let baseFilterFreq = 150 + (verticalElevationNorm * 2000);
-        if (audioState === 1) {
-            baseFilterFreq = Math.max(baseFilterFreq, finalPitch * 1.8);
+        if (audioState === 1 || audioState === 2 || audioState === 3 || audioState === 5) {
+            baseFilterFreq = Math.max(baseFilterFreq, finalPitch * 3.0);
         }
         const filterFreq = Math.min(20000, baseFilterFreq);
 
@@ -1151,15 +1350,20 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
         // Tracking FM frequency
         fmOsc.frequency.setTargetAtTime(finalPitch * 0.25, now, T);
 
+        // --- GLOBAL MUTE OVERRIDE ---
+        if (isGlobalMuted) {
+            masterVolTarget = 0;
+        }
+
         masterGain.gain.setTargetAtTime(masterVolTarget, now, T);
 
         // Muteamos el canal sample
         if (sampleGain) sampleGain.gain.setTargetAtTime(0, now, T);
 
-    } else if (audioState === 2) {
+    } else if (audioState === 4) {
         // === TRACK BRASIL 2 (SAMPLE) ===
         // Un mp3 necesita más volumen (1.0 vs 0.25 del sinte) y un espectro de frecuencias más amplio
-        const sampleVol = intensityScore * controlConfig.sVol;
+        const sampleVol = isGlobalMuted ? 0 : (intensityScore * controlConfig.sVol);
 
         // --- 1. PITCH (PlaybackRate) ---
         // Combinamos el tono base del knob con el barrido horizontal del mouse (X axis)
@@ -1191,13 +1395,13 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
             bgSampleEl.playbackRate = finalPlaybackRate;
         }
 
-        // Nos aseguramos que el sinte interactivo esté reseteado/muteado
         masterGain.gain.setTargetAtTime(0, now, T);
     }
 }
 
 // 0 = Apagado, 1 = Sintetizador Interactivo, 2 = Sample (Brasil 2), 3 = Arpegiador Sintetizador
 let audioState = 0;
+let isGlobalMuted = false;
 
 // Toggle sound on/off/sample
 function toggleAudio() {
@@ -1209,7 +1413,14 @@ function toggleAudio() {
     initAudioContext();
     if (audioCtx.state === 'suspended') audioCtx.resume();
 
-    audioState = (audioState + 1) % 4; // Cycle 0 -> 1 -> 2 -> 3 -> 0
+    audioState = (audioState + 1) % 6; // Cycle 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 0
+
+    const seqToggleBtn = document.getElementById('sequencer-toggle-btn');
+    const seqPanel = document.getElementById('sequencer-panel');
+
+    // Hide sequencer panel button and close panel by default unless we are in State 3
+    if (seqToggleBtn) seqToggleBtn.style.display = 'none';
+    if (seqPanel) seqPanel.classList.add('is-collapsed');
 
     if (audioState === 1) {
         // STATE 1: SINTETIZADOR ARPEGIADOR
@@ -1223,7 +1434,7 @@ function toggleAudio() {
 
         btn.classList.add('is-active');
         iconEl.textContent = '1';
-        btn.setAttribute('aria-label', 'Cambiar a Track 2');
+        btn.setAttribute('aria-label', 'Cambiar a Secuenciador Gráfico');
 
         if (controlsPanel) {
             controlsPanel.classList.add('is-visible');
@@ -1232,13 +1443,49 @@ function toggleAudio() {
         }
 
     } else if (audioState === 2) {
-        // STATE 2: SAMPLE AUDIO (Brasil 2)
+        // STATE 2: GRID SEQUENCER (Pentagrama visual)
+        audioEnabled = true;
+
+        stopSamplePlayback();
+        if (synthGain) synthGain.gain.setValueAtTime(1, audioCtx.currentTime);
+
+        btn.classList.add('is-active');
+        iconEl.textContent = '2';
+        btn.setAttribute('aria-label', 'Cambiar a Tema Airwolf');
+
+        if (controlsPanel) {
+            controlsPanel.classList.add('is-visible');
+            controlsPanel.classList.add('is-synth');
+            controlsPanel.classList.remove('is-sample');
+        }
+
+        if (seqToggleBtn) seqToggleBtn.style.display = 'flex';
+
+    } else if (audioState === 3) {
+        // STATE 3: AIRWOLF THEME SEQUENCER
+        audioEnabled = true;
+
+        stopSamplePlayback();
+        if (synthGain) synthGain.gain.setValueAtTime(1, audioCtx.currentTime);
+
+        btn.classList.add('is-active');
+        iconEl.textContent = '3';
+        btn.setAttribute('aria-label', 'Cambiar a Track 4');
+
+        if (controlsPanel) {
+            controlsPanel.classList.add('is-visible');
+            controlsPanel.classList.add('is-synth');
+            controlsPanel.classList.remove('is-sample');
+        }
+
+    } else if (audioState === 4) {
+        // STATE 4: SAMPLE AUDIO (Brasil 2)
         audioEnabled = true;
 
         if (synthGain) synthGain.gain.setValueAtTime(0, audioCtx.currentTime);
 
-        iconEl.textContent = '2';
-        btn.setAttribute('aria-label', 'Cambiar a Track 3');
+        iconEl.textContent = '4';
+        btn.setAttribute('aria-label', 'Cambiar a Track 5');
 
         if (controlsPanel) {
             controlsPanel.classList.add('is-visible');
@@ -1246,21 +1493,18 @@ function toggleAudio() {
             controlsPanel.classList.add('is-sample');
         }
 
-        // Arrancamos el sample en Web Audio
+        if (seqPanel) seqPanel.classList.add('is-collapsed');
         startSamplePlayback();
 
-    } else if (audioState === 3) {
-        // STATE 3: SINTETIZADOR INTERACTIVO
+    } else if (audioState === 5) {
+        // STATE 5: SINTETIZADOR INTERACTIVO
         audioEnabled = true;
 
-        // Detenemos el sample si venía sonando
         stopSamplePlayback();
-
-        // Prendemos los osciladores (abriendo su volumen independiente)
         if (synthGain) synthGain.gain.setValueAtTime(1, audioCtx.currentTime);
 
         btn.classList.add('is-active');
-        iconEl.textContent = '3';
+        iconEl.textContent = '5';
         btn.setAttribute('aria-label', 'Desactivar sonido');
 
         if (controlsPanel) {
@@ -1268,6 +1512,8 @@ function toggleAudio() {
             controlsPanel.classList.add('is-synth');
             controlsPanel.classList.remove('is-sample');
         }
+
+        if (seqPanel) seqPanel.classList.add('is-collapsed');
 
     } else {
         // STATE 0: TODO APAGADO
@@ -1282,17 +1528,17 @@ function toggleAudio() {
             controlsPanel.classList.remove('is-sample');
         }
 
+        if (seqPanel) seqPanel.classList.add('is-collapsed');
+
         if (masterGain) {
             masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
         }
-        // Mutear explícitamente el canal del sample (salta masterGain, hay que silenciarlo aquí)
         if (sampleGain) {
             sampleGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
         }
 
         stopSamplePlayback();
 
-        // Silenciar el fallback HTML5 Audio
         if (bgSampleEl) {
             bgSampleEl.pause();
             bgSampleEl.volume = 0;

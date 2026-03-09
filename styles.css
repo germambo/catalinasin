@@ -370,6 +370,94 @@ a {
     margin-top: 15px;
 }
 
+/* =========================================
+   Sequencer Grid Panel
+   ========================================= */
+
+#sequencer-panel {
+    top: var(--spacing-lg);
+    /* Align with toggles */
+    left: calc(var(--spacing-lg) + 100px);
+    /* Move to the right of the toggles */
+    right: auto;
+    bottom: auto;
+    transform-origin: top left;
+    width: max-content;
+
+    /* Override .audio-controls hidden defaults */
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+#sequencer-panel.is-collapsed {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sequencer-grid {
+    display: grid;
+    /* 8 columns for 8 steps, reduced by ~30% from 32px to 22px */
+    grid-template-columns: repeat(8, 22px);
+    /* 8 rows for 8 notes in a scale */
+    grid-template-rows: repeat(8, 22px);
+    gap: 3px;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.seq-cell {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.15s ease;
+}
+
+.seq-cell:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.seq-cell.is-active {
+    background: var(--color-text-light);
+    border-color: var(--color-text-light);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Playhead styling for the current column playing */
+.sequencer-grid.playing-col-0 .seq-cell[data-col="0"],
+.sequencer-grid.playing-col-1 .seq-cell[data-col="1"],
+.sequencer-grid.playing-col-2 .seq-cell[data-col="2"],
+.sequencer-grid.playing-col-3 .seq-cell[data-col="3"],
+.sequencer-grid.playing-col-4 .seq-cell[data-col="4"],
+.sequencer-grid.playing-col-5 .seq-cell[data-col="5"],
+.sequencer-grid.playing-col-6 .seq-cell[data-col="6"],
+.sequencer-grid.playing-col-7 .seq-cell[data-col="7"] {
+    background: rgba(217, 37, 37, 0.3);
+    /* Soft red for the column background */
+    border-color: var(--color-accent-red);
+}
+
+/* If a cell is both active AND playing, make it super bright red */
+.sequencer-grid.playing-col-0 .seq-cell.is-active[data-col="0"],
+.sequencer-grid.playing-col-1 .seq-cell.is-active[data-col="1"],
+.sequencer-grid.playing-col-2 .seq-cell.is-active[data-col="2"],
+.sequencer-grid.playing-col-3 .seq-cell.is-active[data-col="3"],
+.sequencer-grid.playing-col-4 .seq-cell.is-active[data-col="4"],
+.sequencer-grid.playing-col-5 .seq-cell.is-active[data-col="5"],
+.sequencer-grid.playing-col-6 .seq-cell.is-active[data-col="6"],
+.sequencer-grid.playing-col-7 .seq-cell.is-active[data-col="7"] {
+    background: var(--color-accent-red);
+    box-shadow: 0 0 15px var(--color-accent-red);
+    transform: scale(1.1);
+}
+
 /* Tracks */
 .track-row {
     display: grid;
@@ -963,6 +1051,38 @@ a {
     }
 }
 
+/* Hero Mute Indicator */
+.hero-mute-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    /* Start slightly above center */
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-light);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 100;
+    transition: opacity 0.3s ease;
+}
+
+.hero-mute-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.hero-mute-icon.is-visible {
+    animation: mute-icon-flash 1.0s ease forwards;
+}
+
 /* Footer =============================== */
 footer.panel {
     text-align: center;
@@ -971,12 +1091,19 @@ footer.panel {
     color: rgba(255, 255, 255, 0.3);
 }
 
-/* Audio Toggle Button ================== */
-.audio-toggle {
+/* Audio Toggle Container (Top Left) */
+.audio-toggles-container {
     position: absolute;
     top: var(--spacing-lg);
     left: var(--spacing-lg);
-    /* Movemos a la izquierda para que no peleé con el centro ni con los knobs a la derecha */
+    z-index: 50;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+/* Audio Toggle Button ================== */
+.audio-toggle {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -984,11 +1111,27 @@ footer.panel {
     background: none;
     border: none;
     cursor: pointer;
-    z-index: 50;
-    /* Aumentado por si el canvas o hero_content lo tapan */
     opacity: 0.5;
     transition: opacity 0.4s ease;
     padding: 0;
+}
+
+.music-toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.4s ease, transform 0.2s ease;
+}
+
+.audio-toggle:hover .music-toggle-icon {
+    color: var(--color-text-light);
+}
+
+.audio-toggle:active .music-toggle-icon {
+    transform: scale(0.9);
 }
 
 .audio-toggle:hover {
