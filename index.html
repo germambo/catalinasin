@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalina Sin | Diseño Sonoro + Composición</title>
+    <meta name="description"
+        content="Portfolio de Catalina Sin. Diseño sonoro y composición musical. Plantas, futuro y sonido.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Space Grotesk for headings, Noto Sans (thin weights) for body text -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Sans+Chakma&family=Noto+Sans:wght@100;200;300;400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <main id="main-content">
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <!-- Canvas para las ondas de sonido interactivas -->
+            <canvas id="soundwave-canvas"></canvas>
+
+            <div class="hero__content">
+                <h1 class="hero__title">Catalina Sin</h1>
+                <p class="hero__subtitle">Diseño Sonoro <span class="text-accent">+</span> Composición</p>
+            </div>
+            <!-- Indicador visual sutil de scroll -->
+            <div class="hero__scroll-indicator">
+                <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </div>
+
+            <!-- Audio toggle button -->
+            <button id="audio-toggle" class="audio-toggle" aria-label="Activar sonido">
+                <span id="audio-icon" class="audio-toggle__icon">○</span>
+            </button>
+
+            <!-- Hero Wave Control Panel (top-right corner) -->
+            <div class="grain-controls is-collapsed" id="hero-wave-controls">
+                <div class="grain-controls__header">
+                    <p class="grain-controls__title">Ondas <button class="grain-controls__reset" id="hw-reset-all"
+                            title="Restablecer todo">↺</button></p>
+                    <button class="grain-controls__toggle" id="hero-wave-toggle" aria-label="Mostrar controles de ondas"
+                        title="Ocultar/mostrar controles de ondas">−</button>
+                </div>
+                <div class="grain-controls__body" id="hero-wave-controls-body">
+                    <div class="grain-knob-group" data-id="hw-opacity">
+                        <label for="hw-opacity">Opacidad</label>
+                        <input type="range" id="hw-opacity" min="0" max="0.5" value="0.1" step="0.01">
+                        <span class="grain-knob-val" id="val-hw-opacity">0.10</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-count">
+                        <label for="hw-count">Cant. Ondas</label>
+                        <input type="range" id="hw-count" min="5" max="80" value="43" step="1">
+                        <span class="grain-knob-val" id="val-hw-count">43</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-deflection">
+                        <label for="hw-deflection">Arrastre</label>
+                        <input type="range" id="hw-deflection" min="0" max="30" value="15" step="0.5">
+                        <span class="grain-knob-val" id="val-hw-deflection">15.0</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-amplitude">
+                        <label for="hw-amplitude">Amplitud</label>
+                        <input type="range" id="hw-amplitude" min="10" max="120" value="55" step="1">
+                        <span class="grain-knob-val" id="val-hw-amplitude">55px</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-frequency">
+                        <label for="hw-frequency">Frecuencia</label>
+                        <input type="range" id="hw-frequency" min="0.01" max="0.12" value="0.045" step="0.002">
+                        <span class="grain-knob-val" id="val-hw-frequency">0.045</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-speed">
+                        <label for="hw-speed">Velocidad</label>
+                        <input type="range" id="hw-speed" min="0" max="1.0" value="0.0195" step="0.001">
+                        <span class="grain-knob-val" id="val-hw-speed">0.0195</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-randomness">
+                        <label for="hw-randomness">Aleatoriedad</label>
+                        <input type="range" id="hw-randomness" min="0" max="3" value="1" step="0.1">
+                        <span class="grain-knob-val" id="val-hw-randomness">1.0</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-gravitypull">
+                        <label for="hw-gravitypull">Tirón Cursor</label>
+                        <input type="range" id="hw-gravitypull" min="0" max="3.0" value="1.05" step="0.05">
+                        <span class="grain-knob-val" id="val-hw-gravitypull">1.05x</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-gravity">
+                        <label for="hw-gravity">Radio cursor</label>
+                        <input type="range" id="hw-gravity" min="0" max="500" value="224" step="10">
+                        <span class="grain-knob-val" id="val-hw-gravity">224px</span>
+                    </div>
+                    <div class="grain-knob-group" data-id="hw-linewidth">
+                        <label for="hw-linewidth">Grosor</label>
+                        <input type="range" id="hw-linewidth" min="0.3" max="4" value="1" step="0.1">
+                        <span class="grain-knob-val" id="val-hw-linewidth">1.0px</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Control Panel (Knobs) -->
+            <div class="audio-controls is-collapsed" id="audio-controls">
+                <div class="audio-controls__header">
+                    <p class="audio-controls__title">Parámetros</p>
+                    <button class="audio-controls__toggle" id="audio-controls-toggle" aria-label="Mostrar parámetros"
+                        title="Ocultar/mostrar parámetros">−</button>
+                </div>
+
+                <!-- Modo 1: Sintetizador oscilador -->
+                <div class="knobs-grid knobs-grid--synth" id="knobs-synth">
+                    <div class="knob-group">
+                        <label for="knob-scale">Escala Musical</label>
+                        <input type="range" id="knob-scale" min="0" max="5" value="0" step="1">
+                        <span class="knob-val" id="val-scale">0</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-pitch">Pitch Base</label>
+                        <input type="range" id="knob-pitch" min="0" max="13" value="7" step="1">
+                        <span class="knob-val" id="val-pitch">7</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-arpeggio">Salto Arpegio</label>
+                        <input type="range" id="knob-arpeggio" min="1" max="10" value="5" step="1">
+                        <span class="knob-val" id="val-arpeggio">5</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-lfo">Profund. LFO</label>
+                        <input type="range" id="knob-lfo" min="0" max="1000" value="400" step="10">
+                        <span class="knob-val" id="val-lfo">400</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-resonance">Resonancia (Q)</label>
+                        <input type="range" id="knob-resonance" min="0" max="25" value="2.5" step="0.5">
+                        <span class="knob-val" id="val-resonance">2.5</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-smooth">Mecánico/Fluido</label>
+                        <input type="range" id="knob-smooth" min="0.01" max="0.15" value="0.02" step="0.01">
+                        <span class="knob-val" id="val-smooth">0.02</span>
+                    </div>
+
+                    <!-- Nuevos controles de Efectos Verticales -->
+                    <div class="synth-effects-toggles">
+                        <label class="effect-toggle">
+                            <input type="checkbox" id="efx-resonance" checked>
+                            <span class="effect-toggle__text">resonancia</span>
+                        </label>
+                        <label class="effect-toggle">
+                            <input type="checkbox" id="efx-fm">
+                            <span class="effect-toggle__text">caos fm</span>
+                        </label>
+                        <label class="effect-toggle">
+                            <input type="checkbox" id="efx-fuzz">
+                            <span class="effect-toggle__text">fuzz</span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <!-- Modo 2: Sample Brasil 2 -->
+                <div class="knobs-grid knobs-grid--sample" id="knobs-sample">
+                    <div class="knob-group">
+                        <label for="knob-s-pitch">Tono Base</label>
+                        <input type="range" id="knob-s-pitch" min="0.5" max="2.0" value="1.0" step="0.01">
+                        <span class="knob-val" id="val-s-pitch">1.0×</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-s-pitchrange">Rango Pitch</label>
+                        <input type="range" id="knob-s-pitchrange" min="0" max="0.5" value="0.15" step="0.01">
+                        <span class="knob-val" id="val-s-pitchrange">0.15</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-s-brightness">Brillo Base</label>
+                        <input type="range" id="knob-s-brightness" min="200" max="12000" value="2000" step="100">
+                        <span class="knob-val" id="val-s-brightness">2000</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-s-filterrange">Sens. Filtro</label>
+                        <input type="range" id="knob-s-filterrange" min="0" max="20000" value="10000" step="500">
+                        <span class="knob-val" id="val-s-filterrange">10000</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-s-lfo">Prof. LFO</label>
+                        <input type="range" id="knob-s-lfo" min="0" max="800" value="200" step="10">
+                        <span class="knob-val" id="val-s-lfo">200</span>
+                    </div>
+                    <div class="knob-group">
+                        <label for="knob-s-vol">Sens. Volumen</label>
+                        <input type="range" id="knob-s-vol" min="0.5" max="3.0" value="1.5" step="0.1">
+                        <span class="knob-val" id="val-s-vol">1.5</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Obras (Works) Section -->
+        <article class="work-item panel" id="obra-1">
+            <div class="work-item__content work-item__content--split">
+
+                <!-- Columna Izquierda: Info-->
+                <div class="work-item__left">
+                    <div class="work-item__title-group" style="margin-bottom: 3rem;">
+                        <h2 class="work-item__title">Bailó toda la noche,<br />tomó agua fría y se murió</h2>
+                        <p class="work-item__year">(2025)</p>
+                    </div>
+                    <div class="work-item__details">
+                        <p class="work-item__desc work-item__desc--bold">Composición de música original | <span
+                                class="text-accent">teatro</span></p>
+
+                        <div class="work-item__description-text">
+                            <p><i>Una autoficción descarnada y luminosa.</i></p>
+                            <p>Bailó toda la noche, tomó agua fría y se murió, despliega la historia de una actriz que,
+                                en su deseo por ser amada, nos sumerge en recuerdos difusos de su infancia,
+                                imaginaciones y ficciones creadas para sobrevivir. A través de su autoficción, la
+                                protagonista enfrenta el abandono, el duelo y su anhelo de crear una obra propia, en la
+                                que pueda encontrar la clave para comprender su existencia y su voz en el mundo.</p>
+                        </div>
+
+                        <div class="work-item__credits">
+                            <p class="work-item__desc">Dirección: Canela Corno</p>
+                            <p class="work-item__link-wrapper">
+                                <a href="https://www.instagram.com/bailotodalanocheobra/" target="_blank"
+                                    class="work-link">@bailotodalanocheobra</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Imagen + Reproductor de Audio unidos -->
+                <div class="work-item__right">
+                    <div class="custom-player" id="bailo-player">
+
+                        <figure class="work-item__image-wrapper">
+                            <img src="assets/img/bailo-toda-la-noche.jpg" alt="Bailó toda la noche obra"
+                                class="work-image" />
+                        </figure>
+
+                        <div class="custom-player__tracklist">
+                            <!-- Track 1 -->
+                            <div class="track-row" data-src="assets/audio/Coreo_201125_1.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir Coreo">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">Coreo / esc 10</span>
+                            </div>
+
+                            <!-- Track 2 -->
+                            <div class="track-row" data-src="assets/audio/Ropero.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir Ropero">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">Ropero / esc 14</span>
+                            </div>
+
+                            <!-- Track 3 (Vacía) -->
+                            <div class="track-row is-empty" data-src="">
+                                <button class="track-btn play-pause-btn" aria-label="Vacío" disabled>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">Video / esc 8</span>
+                            </div>
+                        </div>
+
+                        <!-- Player Controls (Global progress + Volume) -->
+                        <div class="custom-player__controls">
+                            <!-- Global Progress -->
+                            <div class="player-progress">
+                                <span class="track-time track-time--current">0:00</span>
+                                <div class="track-progress-container">
+                                    <div class="track-progress-fill"></div>
+                                </div>
+                            </div>
+
+                            <!-- Narrow Volume Slider -->
+                            <div class="player-volume">
+                                <span class="volume-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M15.54 8.46C16.4774 9.39764 17.0041 10.6692 17.0041 12C17.0041 13.3308 16.4774 14.6024 15.54 15.54"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div class="volume-bar-container" id="volume-bar-container">
+                                    <div class="volume-bar-fill" id="volume-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+
+        <article class="work-item panel" id="obra-2">
+            <div class="work-item__content work-item__content--split">
+
+                <!-- Columna Izquierda: Info-->
+                <div class="work-item__left">
+                    <div class="work-item__title-group" style="margin-bottom: 3rem;">
+                        <h2 class="work-item__title">No es mi despedida</h2>
+                        <p class="work-item__year">(2024)</p>
+                    </div>
+                    <div class="work-item__details">
+                        <p class="work-item__desc work-item__desc--bold">Diseño sonoro y música en vivo | <span
+                                class="text-accent">teatro</span></p>
+
+                        <div class="work-item__description-text">
+                            <p>Estamos atrapadas en un baile<br>
+                                Una celebración, un jaleo, una farra, una velada, una conmemoración al colapso.<br>
+                                Mientras vemos el mundo caer acariciamos nuestros bordes pixelados, corridos, inestables
+                                y ahogándose en una pantalla.<br>
+                                Tenemos algo que no crece en tamaño, pero si en recuerdos. Y edificios que caen, una y
+                                otra vez.<br>
+                                Transmisión en directo galopando nuestra última canción.<br>
+                                Queremos nos recuerden borrosas, difusas, con la piel quebrada listas para la foto</p>
+                        </div>
+
+                        <div class="work-item__credits">
+                            <p class="work-item__desc">Dirección: Doxa Morfa</p>
+                            <p class="work-item__link-wrapper">
+                                <a href="https://www.instagram.com/noesmidespedidaa/" target="_blank"
+                                    class="work-link">@noesmidespedida</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Imagen + Reproductor de Audio unidos -->
+                <div class="work-item__right">
+                    <div class="custom-player" id="nemd-player">
+
+                        <figure class="work-item__image-wrapper">
+                            <img src="assets/No es mi despedida.jpg" alt="No es mi despedida" class="work-image" />
+                        </figure>
+
+                        <div class="custom-player__tracklist custom-player__tracklist--grid">
+                            <!-- Track 1 -->
+                            <div class="track-row" data-src="assets/audio/NEMD 1.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 1">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">1</span>
+                            </div>
+
+                            <!-- Track 2 -->
+                            <div class="track-row" data-src="assets/audio/NEMD 2.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 2">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">2</span>
+                            </div>
+
+                            <!-- Track 3 -->
+                            <div class="track-row" data-src="assets/audio/NEMD 3.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 3">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">3</span>
+                            </div>
+
+                            <!-- Track 4 -->
+                            <div class="track-row" data-src="assets/audio/NEMD 4.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 4">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">4</span>
+                            </div>
+
+                            <!-- Track 5 -->
+                            <div class="track-row" data-src="assets/audio/NEMD 5.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 5">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">5</span>
+                            </div>
+
+                            <!-- Track 6 -->
+                            <div class="track-row" data-src="assets/audio/NEMD 6.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 6">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">6</span>
+                            </div>
+                        </div>
+
+                        <!-- Player Controls (Global progress + Volume) -->
+                        <div class="custom-player__controls">
+                            <!-- Global Progress -->
+                            <div class="player-progress">
+                                <span class="track-time track-time--current">0:00</span>
+                                <div class="track-progress-container">
+                                    <div class="track-progress-fill"></div>
+                                </div>
+                            </div>
+
+                            <!-- Narrow Volume Slider -->
+                            <div class="player-volume">
+                                <span class="volume-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M15.54 8.46C16.4774 9.39764 17.0041 10.6692 17.0041 12C17.0041 13.3308 16.4774 14.6024 15.54 15.54"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div class="volume-bar-container" id="nemd-volume-bar-container">
+                                    <div class="volume-bar-fill" id="nemd-volume-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+
+        <article class="work-item panel" id="obra-3">
+            <div class="work-item__content work-item__content--split">
+
+                <!-- Columna Izquierda: Info-->
+                <div class="work-item__left">
+                    <div class="work-item__title-group" style="margin-bottom: 3rem;">
+                        <h2 class="work-item__title">Piel de mentira</h2>
+                        <p class="work-item__year">(2025)</p>
+                    </div>
+                    <div class="work-item__details">
+                        <p class="work-item__desc work-item__desc--bold">Re-design de sonido | <span
+                                class="text-accent">Cortometraje</span></p>
+
+                        <div class="work-item__description-text">
+                            <p>Cortometraje animado realizado en óleo sobre papel y vidrio.</p>
+                            <p>En postproducción.</p>
+                        </div>
+
+                        <div class="work-item__credits">
+                            <p class="work-item__desc">Guion y dirección: María Cristina Pérez</p>
+                            <p class="work-item__desc">Diseño de sonido: Sinsonte Estudio.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Imagen + Reproductor de Audio unidos -->
+                <div class="work-item__right">
+                    <div class="custom-player" id="pdm-player">
+
+                        <figure class="work-item__image-wrapper">
+                            <img src="assets/img/piel de mentira.jpg" alt="Piel de mentira" class="work-image" />
+                        </figure>
+
+                        <div class="custom-player__tracklist custom-player__tracklist--grid">
+                            <!-- Track 1 -->
+                            <div class="track-row" data-src="assets/audio/Piel de mentira 1.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 1">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">1</span>
+                            </div>
+
+                            <!-- Track 2 -->
+                            <div class="track-row" data-src="assets/audio/Piel de mentira 2.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 2">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">2</span>
+                            </div>
+
+                            <!-- Track 3 -->
+                            <div class="track-row" data-src="assets/audio/Piel de mentira 3.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 3">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">3</span>
+                            </div>
+
+                            <!-- Track 4 -->
+                            <div class="track-row" data-src="assets/audio/Piel de mentira 4.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 4">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">4</span>
+                            </div>
+
+                            <!-- Track 5 -->
+                            <div class="track-row" data-src="assets/audio/Piel de mentira 5.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 5">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">5</span>
+                            </div>
+
+                            <!-- Track 6 -->
+                            <div class="track-row" data-src="assets/audio/Piel de mentira 6.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 6">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">6</span>
+                            </div>
+                        </div>
+
+                        <!-- Player Controls (Global progress + Volume) -->
+                        <div class="custom-player__controls">
+                            <!-- Global Progress -->
+                            <div class="player-progress">
+                                <span class="track-time track-time--current">0:00</span>
+                                <div class="track-progress-container">
+                                    <div class="track-progress-fill"></div>
+                                </div>
+                            </div>
+
+                            <!-- Narrow Volume Slider -->
+                            <div class="player-volume">
+                                <span class="volume-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M15.54 8.46C16.4774 9.39764 17.0041 10.6692 17.0041 12C17.0041 13.3308 16.4774 14.6024 15.54 15.54"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div class="volume-bar-container">
+                                    <div class="volume-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- Video Panel: Agua Brasil -->
+        <article class="panel video-panel" id="obra-video">
+            <!-- Circular ripple waves canvas (behind the video) -->
+            <canvas id="ripple-canvas" class="video-panel__ripples"></canvas>
+            <video id="agua-brasil-video" class="video-panel__video" src="assets/Agua brasil.mp4" loop
+                playsinline></video>
+            <!-- Film grain overlay -->
+            <canvas id="grain-canvas" class="video-panel__grain"></canvas>
+
+            <!-- Wave Control Panel (top-left side) -->
+            <div class="grain-controls grain-controls--left is-collapsed" id="wave-controls">
+                <div class="grain-controls__header">
+                    <p class="grain-controls__title">Ondas</p>
+                    <button class="grain-controls__toggle" id="wave-toggle" aria-label="Mostrar controles de ondas"
+                        title="Ocultar/mostrar controles de ondas">−</button>
+                </div>
+                <div class="grain-controls__body" id="wave-controls-body">
+                    <div class="grain-knob-group">
+                        <label for="wc-offset">Offset Audio</label>
+                        <input type="range" id="wc-offset" min="-2" max="2" value="0" step="0.1">
+                        <span class="grain-knob-val" id="val-wc-offset">0.0s</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-spawncount">Cant. Ondas</label>
+                        <input type="range" id="wc-spawncount" min="1" max="10" value="1" step="1">
+                        <span class="grain-knob-val" id="val-wc-spawncount">×1</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-opacity">Opacidad</label>
+                        <input type="range" id="wc-opacity" min="0" max="1" value="0.15" step="0.01">
+                        <span class="grain-knob-val" id="val-wc-opacity">0.15</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-spawnoffset">Offset Ondas</label>
+                        <input type="range" id="wc-spawnoffset" min="0" max="60" value="0" step="2">
+                        <span class="grain-knob-val" id="val-wc-spawnoffset">0px</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-randomness">Aleatoriedad</label>
+                        <input type="range" id="wc-randomness" min="0" max="2" value="1" step="0.1">
+                        <span class="grain-knob-val" id="val-wc-randomness">1.0</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-interact">Interacción</label>
+                        <input type="range" id="wc-interact" min="0" max="15" value="3.5" step="0.5">
+                        <span class="grain-knob-val" id="val-wc-interact">3.5</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-speed">Velocidad</label>
+                        <input type="range" id="wc-speed" min="10" max="200" value="55" step="5">
+                        <span class="grain-knob-val" id="val-wc-speed">55px/s</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-undulation">Ondulación</label>
+                        <input type="range" id="wc-undulation" min="0" max="30" value="6" step="0.5">
+                        <span class="grain-knob-val" id="val-wc-undulation">6px</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-gravity">Radio cursor</label>
+                        <input type="range" id="wc-gravity" min="0" max="500" value="200" step="10">
+                        <span class="grain-knob-val" id="val-wc-gravity">200px</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="wc-linewidth">Grosor</label>
+                        <input type="range" id="wc-linewidth" min="0.2" max="4" value="0.6" step="0.1">
+                        <span class="grain-knob-val" id="val-wc-linewidth">0.6px</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grain Control Panel (top-right side) -->
+            <div class="grain-controls is-collapsed" id="grain-controls">
+                <div class="grain-controls__header">
+                    <p class="grain-controls__title">Grain</p>
+                    <button class="grain-controls__toggle" id="grain-toggle" aria-label="Mostrar controles"
+                        title="Ocultar/mostrar controles">−</button>
+                </div>
+                <div class="grain-controls__body" id="grain-controls-body">
+                    <div class="grain-knob-group">
+                        <label for="gc-density">Densidad</label>
+                        <input type="range" id="gc-density" min="0" max="100" value="69" step="1">
+                        <span class="grain-knob-val" id="val-gc-density">69%</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="gc-intensity">Intensidad</label>
+                        <input type="range" id="gc-intensity" min="0" max="255" value="90" step="1">
+                        <span class="grain-knob-val" id="val-gc-intensity">90</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="gc-opacity">Opacidad</label>
+                        <input type="range" id="gc-opacity" min="0" max="100" value="0" step="1">
+                        <span class="grain-knob-val" id="val-gc-opacity">0%</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="gc-fps">Velocidad</label>
+                        <input type="range" id="gc-fps" min="4" max="60" value="15" step="1">
+                        <span class="grain-knob-val" id="val-gc-fps">15fps</span>
+                    </div>
+                    <div class="grain-knob-group">
+                        <label for="gc-size">Tamaño</label>
+                        <input type="range" id="gc-size" min="1" max="4" value="1" step="0.5">
+                        <span class="grain-knob-val" id="val-gc-size">1px</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mute icon overlay (appears briefly on click) -->
+            <div class="video-panel__mute-icon" id="video-mute-icon" aria-hidden="true">
+                <svg id="icon-muted" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    style="display:none;">
+                    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" />
+                    <line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" />
+                </svg>
+                <svg id="icon-unmuted" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path
+                        d="M15.54 8.46C16.4774 9.39764 17.0041 10.6692 17.0041 12C17.0041 13.3308 16.4774 14.6024 15.54 15.54"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <!-- Social Link -->
+            <a href="https://www.instagram.com/catalina__sin/" target="_blank" class="video-panel__social-link">
+                @catalina__sin
+            </a>
+        </article>
+
+        <article class="work-item panel" id="obra-4">
+            <div class="work-item__content work-item__content--split">
+
+                <!-- Columna Izquierda: Info-->
+                <div class="work-item__left">
+                    <div class="work-item__title-group" style="margin-bottom: 3rem;">
+                        <h2 class="work-item__title">Mudanza</h2>
+                        <p class="work-item__year">(2025)</p>
+                    </div>
+                    <div class="work-item__details">
+                        <p class="work-item__desc work-item__desc--bold">Edicion de efectos de sonido y ambientes |
+                            <span class="text-accent">cortometraje</span>
+                        </p>
+
+                        <div class="work-item__description-text">
+                            <p>Una historia mágica que habla del duelo</p>
+                        </div>
+
+                        <div class="work-item__credits">
+                            <p class="work-item__desc">Dirección: Laura Gutierrez Ardila</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Imagen + Reproductor de Audio unidos -->
+                <div class="work-item__right">
+                    <div class="custom-player" id="mudanza-player">
+
+                        <figure class="work-item__image-wrapper">
+                            <img src="assets/img/mudanza.jpg" alt="Mudanza" class="work-image" />
+                        </figure>
+
+                        <div class="custom-player__tracklist custom-player__tracklist--grid">
+                            <!-- Track 1 -->
+                            <div class="track-row" data-src="assets/audio/Mudanza 1.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 1">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">1</span>
+                            </div>
+
+                            <!-- Track 2 -->
+                            <div class="track-row" data-src="assets/audio/Mudanza 2.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 2">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">2</span>
+                            </div>
+
+                            <!-- Track 3 -->
+                            <div class="track-row" data-src="assets/audio/Mudanza 3.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 3">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">3</span>
+                            </div>
+
+                            <!-- Track 4 -->
+                            <div class="track-row" data-src="assets/audio/Mudanza 4.mp3">
+                                <button class="track-btn play-pause-btn" aria-label="Reproducir pista 4">
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-play"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor" />
+                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" class="icon-pause"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <span class="track-name">4</span>
+                            </div>
+                        </div>
+
+                        <!-- Player Controls (Global progress + Volume) -->
+                        <div class="custom-player__controls">
+                            <!-- Global Progress -->
+                            <div class="player-progress">
+                                <span class="track-time track-time--current">0:00</span>
+                                <div class="track-progress-container">
+                                    <div class="track-progress-fill"></div>
+                                </div>
+                            </div>
+
+                            <!-- Narrow Volume Slider -->
+                            <div class="player-volume">
+                                <span class="volume-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M15.54 8.46C16.4774 9.39764 17.0041 10.6692 17.0041 12C17.0041 13.3308 16.4774 14.6024 15.54 15.54"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <div class="volume-bar-container">
+                                    <div class="volume-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+
+        <article class="panel spotify-panel" id="obra-eva-candil">
+            <div class="spotify-panel__inner">
+
+                <div class="spotify-panel__header">
+                    <h2 class="spotify-panel__title">Eva Candil</h2>
+                    <p class="spotify-panel__year">(2022)</p>
+                </div>
+
+                <p class="spotify-panel__desc">
+                    Produjo y cantó su primer álbum como intérprete de música folklórica.
+                </p>
+
+                <div class="spotify-panel__divider"></div>
+
+                <div class="spotify-panel__embed">
+                    <iframe
+                        src="https://open.spotify.com/embed/album/1cdBDyU3VE0A2JNCrL5L91?utm_source=generator&theme=0"
+                        width="100%" height="380" frameborder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy" title="Eva Candil — Spotify Album">
+                    </iframe>
+                </div>
+
+            </div>
+        </article>
+
+        <footer class="panel">
+            <p>&copy; 2026 Catalina Sin</p>
+        </footer>
+
+    </main>
+
+    <!-- Floating Navigation -->
+    <nav class="float-nav" id="float-nav" aria-label="Navegación de secciones">
+        <!-- Expandable menu list -->
+        <ul class="float-nav__list" id="float-nav-list" role="menu">
+            <li class="float-nav__item" role="menuitem"><button class="float-nav__link" data-index="0">Intro</button>
+            </li>
+            <li class="float-nav__item" role="menuitem"><button class="float-nav__link" data-index="1">Bailó toda la
+                    noche</button></li>
+            <li class="float-nav__item" role="menuitem"><button class="float-nav__link" data-index="2">No es mi
+                    despedida</button></li>
+            <li class="float-nav__item" role="menuitem"><button class="float-nav__link" data-index="3">Piel de
+                    mentira</button></li>
+            <li class="float-nav__item" role="menuitem"><button class="float-nav__link" data-index="5">Mudanza</button>
+            </li>
+            <li class="float-nav__item" role="menuitem"><button class="float-nav__link" data-index="6">Eva
+                    Candil</button></li>
+        </ul>
+
+        <!-- Trigger button: Stacked horizontal "S" waves -->
+        <button class="float-nav__trigger" id="float-nav-trigger" aria-expanded="false" aria-controls="float-nav-list"
+            aria-label="Abrir menú de navegación">
+            <svg class="nav-wave-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Five perfectly synchronized repeating waves -->
+                <path class="nav-wave nav-wave--1"
+                    d="M0 10 C5 10 5 6 10 6 C15 6 15 10 20 10 C25 10 25 6 30 6 C35 6 35 10 40 10 C45 10 45 6 50 6 C55 6 55 10 60 10"
+                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+                <path class="nav-wave nav-wave--2"
+                    d="M0 16 C5 16 5 12 10 12 C15 12 15 16 20 16 C25 16 25 12 30 12 C35 12 35 16 40 16 C45 16 45 12 50 12 C55 12 55 16 60 16"
+                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+                <path class="nav-wave nav-wave--3"
+                    d="M0 22 C5 22 5 18 10 18 C15 18 15 22 20 22 C25 22 25 18 30 18 C35 18 35 22 40 22 C45 22 45 18 50 18 C55 18 55 22 60 22"
+                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+                <path class="nav-wave nav-wave--4"
+                    d="M0 28 C5 28 5 24 10 24 C15 24 15 28 20 28 C25 28 25 24 30 24 C35 24 35 28 40 28 C45 28 45 24 50 24 C55 24 55 28 60 28"
+                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+                <path class="nav-wave nav-wave--5"
+                    d="M0 34 C5 34 5 30 10 30 C15 30 15 34 20 34 C25 34 25 30 30 30 C35 30 35 34 40 34 C45 34 45 30 50 30 C55 30 55 34 60 34"
+                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+            </svg>
+        </button>
+    </nav>
+
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Observer.min.js"></script>
+
+    <!-- Main Logic -->
+    <script src="main.js"></script>
+</body>
+
+</html>

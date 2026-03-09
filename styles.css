@@ -1,0 +1,1526 @@
+/* ==========================================================================
+   CSS Variables & Tokens (Palette & Typography)
+   ========================================================================== */
+:root {
+    /* Color Palette */
+    --color-bg-dark: #0a0c0b;
+    /* Very dark off-black */
+    --color-bg-green: #1a2a22;
+    /* Desaturated dark green */
+    --color-text-light: #f5f5f5;
+    /* Off-white for readability */
+    --color-accent-red: #d92525;
+    /* Minimal red accents */
+
+    /* Typography */
+    /* Space Grotesk for headings; Noto Sans for body (has 100–400 thin weights) */
+    --font-heading: 'Elms Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Noto Sans', 'Noto Sans Chakma', system-ui, -apple-system, sans-serif;
+
+    /* Spacing & Utilities */
+    --spacing-xxl: 8rem;
+    --spacing-xl: 4rem;
+    --spacing-lg: 2rem;
+    --spacing-md: 1.5rem;
+    --spacing-sm: 1rem;
+    --spacing-xs: 0.5rem;
+
+    --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Base Reset
+   ========================================================================== */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: auto;
+    overflow: hidden;
+    /* Forzamos el control total a JS */
+}
+
+body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-light);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    /* Efecto "futuro/plantas" en el fondo principal mediante un gradiente oscuro muy sutil */
+    background-image: radial-gradient(circle at 15% 50%, rgba(26, 42, 34, 0.4), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(217, 37, 37, 0.03), transparent 50%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* ==========================================================================
+   Lenis Smooth Scroll Utilities (REMOVED - Managed by GSAP Observer)
+   ========================================================================== */
+
+/* ==========================================================================
+   Hero Section
+   ========================================================================== */
+.hero {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    /* Changed para mover secciones completas */
+    top: 0;
+    left: 0;
+    padding: var(--spacing-lg);
+    z-index: 10;
+    overflow: hidden;
+}
+
+#soundwave-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    /* Detrás del texto pero sobre el fondo */
+    pointer-events: auto;
+    /* Necesario para que registre el movimiento del mouse */
+}
+
+.hero__content {
+    text-align: center;
+    /* GSAP will animate this in */
+    opacity: 0;
+    transform: translateY(30px);
+    z-index: 2;
+    margin-top: -250px;
+    /* Por encima del canvas */
+    pointer-events: none;
+    /* Para que el mouse traspase el texto e interactúe con el fondo */
+}
+
+.hero__title {
+    font-size: clamp(1.35rem, 2.8vw, 1.95rem);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text-light);
+    text-transform: none;
+}
+
+.hero__subtitle {
+    font-size: clamp(0.875rem, 1.35vw, 1.125rem);
+    font-family: var(--font-body);
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: lowercase;
+    color: #888;
+}
+
+.text-accent {
+    color: var(--color-accent-red);
+}
+
+/* Scroll Indicator */
+.hero__scroll-indicator {
+    position: absolute;
+    bottom: var(--spacing-xl);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.scroll-arrow {
+    width: 24px;
+    height: 24px;
+    color: var(--color-accent-red);
+    animation: slide-fade-arrow 2.5s infinite ease-out;
+    opacity: 0;
+}
+
+@keyframes slide-fade-arrow {
+    0% {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.8;
+    }
+
+    70% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translateY(15px);
+        opacity: 0;
+    }
+}
+
+/* ==========================================================================
+   Works Section (Full Page Snap)
+   ========================================================================== */
+
+/* Base class for all fullpage sections including footer */
+.panel {
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    /* Ocultos por defecto, GSAP los mostrará */
+    visibility: hidden;
+    /* autoAlpha maneja ambos */
+}
+
+.work-item {
+    padding: var(--spacing-lg);
+    border-bottom: none;
+    /* No more scrolling, no more borders */
+}
+
+.work-item__content {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    /* Fallback for other items */
+}
+
+/* Split Layout */
+.work-item__content--split {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-xl);
+    align-items: flex-start;
+    /* top-align both columns so title is at image height */
+    text-align: left;
+}
+
+/* Left Column */
+.work-item__left {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    justify-content: flex-start;
+}
+
+.work-item__title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.work-item__details {
+    display: flex;
+    flex-direction: column;
+    /* Spacing between text blocks */
+    gap: 1rem;
+    /* Only the details block (below the title) is narrowed ~30% */
+    max-width: 70%;
+    text-align: left;
+}
+
+.work-item__desc--bold {
+    /* Ensure Obra de Teatro element inherits color and overrides any native bold */
+    font-weight: 300 !important;
+    color: #888 !important;
+    margin-bottom: 2.2rem;
+}
+
+.work-item__description-text {
+    /* Reverted to the base size to match "Composición..." line */
+    font-size: clamp(0.875rem, 1.35vw, 1.125rem);
+    color: #888;
+    font-weight: 300;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    /* No extra gap between paragraphs, handled by line-height/margins */
+    gap: 1rem;
+}
+
+/* Restore some paragraph margin for the unified look */
+.work-item__description-text p {
+    margin: 0 0 0.5rem 0;
+}
+
+.work-item__description-text p:last-child {
+    margin-bottom: 0;
+}
+
+.work-item__credits {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.work-item__credits .work-item__desc {
+    margin-bottom: 0px;
+    font-weight: 300 !important;
+    color: #888;
+    line-height: 1.4;
+}
+
+.work-link {
+    font-family: var(--font-body);
+    font-size: clamp(0.875rem, 1.35vw, 1.125rem);
+    /* match sizes */
+    color: #888;
+    font-weight: 300;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 2px;
+    line-height: 1.4;
+}
+
+.work-link:hover {
+    color: var(--color-accent-red);
+    border-bottom-color: var(--color-accent-red);
+}
+
+/* Right Column: Stack Image + Audio Player */
+.work-item__right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    align-items: center;
+    /* Center them within the 1/3 column */
+}
+
+/* Image placed *inside* custom player -> remove top margin so it sits flush but keeps border radius */
+.work-item__image-wrapper {
+    width: 100%;
+    border-radius: 0px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.work-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    filter: brightness(0.85) contrast(1.1);
+    transition: filter 0.5s ease;
+}
+
+.work-item__image-wrapper:hover .work-image {
+    filter: brightness(1) contrast(1);
+}
+
+.custom-player {
+    width: 100%;
+    max-width: 480px;
+    background: transparent;
+    border: none;
+    padding: 0 0 var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    /* Reduced gap to bring controls closer to tracks */
+    gap: 8px;
+}
+
+.custom-player__tracklist {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    /* tighter spacing between tracks */
+    margin-top: 15px;
+    /* Increased space from the image as requested */
+}
+
+/* 3-column grid variant for 6-track layouts */
+.custom-player__tracklist--grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 15px;
+}
+
+/* Tracks */
+.track-row {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 2px 12px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.track-row:hover:not(.is-empty) {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.track-row.is-active {
+    background: rgba(217, 37, 37, 0.05);
+    border-color: var(--color-accent-red);
+}
+
+.track-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: none;
+    border: none;
+    /* removed square border */
+    color: var(--color-text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.track-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.track-row:hover:not(.is-empty) .track-btn {
+    color: var(--color-accent-red);
+    border-color: var(--color-accent-red);
+}
+
+.track-row.is-active .track-btn {
+    color: var(--color-bg-dark);
+    background: var(--color-accent-red);
+    border-color: var(--color-accent-red);
+}
+
+/* Keep pause icon dark when hovering an active (playing) track */
+.track-row.is-active:hover .track-btn {
+    color: var(--color-bg-dark);
+}
+
+.track-btn:disabled {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+}
+
+.track-name {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-row.is-active .track-name {
+    color: var(--color-accent-red);
+}
+
+.track-row.is-empty .track-name {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Progress */
+.track-progress-container {
+    height: 34px;
+    /* 4px actual bar + 15px top + 15px bottom */
+    width: 100%;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Visual bar background */
+.track-progress-container::before {
+    content: '';
+    height: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    position: absolute;
+    pointer-events: none;
+}
+
+.track-progress-container.disabled {
+    cursor: default;
+}
+
+.track-progress-fill {
+    height: 4px;
+    width: 0%;
+    background: var(--color-accent-red);
+    position: absolute;
+    left: 0;
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.effect-toggle__text {
+    font-family: var(--font-body);
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: lowercase;
+    white-space: nowrap;
+}
+
+.track-time {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    /* Fixed width prevents reflow when text changes from --:-- to mm:ss */
+    min-width: 3ch;
+    white-space: nowrap;
+}
+
+/* Volume Slider in custom player */
+.custom-player__controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* Removed border-top separator as per user request and reduced padding-top */
+    padding-top: 4px;
+    /* Fixed height prevents layout shift when progress bar activates */
+    height: 36px;
+    overflow: hidden;
+}
+
+.player-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.player-volume {
+    width: 25%;
+    /* Reduced width by ~20% (from 32%) */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-bar-container {
+    height: 34px;
+    /* 4px actual bar + 15px top + 15px bottom */
+    width: 100%;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Visual bar background */
+.volume-bar-container::before {
+    content: '';
+    height: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    position: absolute;
+    pointer-events: none;
+}
+
+.volume-bar-fill {
+    height: 4px;
+    width: 60%;
+    /* initial value matching the previous slider's 0.6 */
+    background: var(--color-accent-red);
+    position: absolute;
+    left: 0;
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.volume-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-light);
+    opacity: 0.6;
+}
+
+.volume-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.styled-slider {
+    flex-grow: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+.styled-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+    background: var(--color-accent-red);
+    cursor: pointer;
+    margin-top: -6px;
+    box-shadow: 0 0 5px rgba(217, 37, 37, 0.5);
+}
+
+.styled-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 2px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1px;
+}
+
+.styled-slider:focus {
+    outline: none;
+}
+
+.work-item__title {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    font-weight: 300;
+    font-size: 3.9vw;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 0;
+}
+
+.work-item__year {
+    font-family: var(--font-body);
+    font-size: clamp(0.875rem, 1.35vw, 1.125rem);
+    opacity: 0.5;
+    font-weight: 300;
+}
+
+.work-item__desc {
+    /* Base description text - reduced size matching .work-item__description-text */
+    font-size: clamp(0.875rem, 1.35vw, 1.125rem);
+    color: #888;
+    font-weight: 300;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Media Placeholder Styles */
+.work-item__media-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    background: transparent;
+}
+
+.work-item__media-placeholder:hover {
+    border-color: var(--color-accent-red);
+    background: rgba(217, 37, 37, 0.05);
+    /* very subtle red tint */
+}
+
+.media-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.work-item__media-placeholder:hover .media-btn {
+    color: var(--color-accent-red);
+}
+
+.media-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   Full-Screen Video Panel
+   ========================================================================== */
+.video-panel {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    background: transparent;
+}
+
+/* Circular ripple waves canvas — sits behind the video */
+.video-panel__ripples {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.video-panel__video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* To be vertical AFTER -90deg rotation, it must be horizontal BEFORE. */
+    width: calc(100vh - 30vmin);
+    aspect-ratio: 16 / 9;
+    /* Rotation + Centering */
+    transform: translate(-50%, -50%) rotate(-90deg);
+    object-fit: cover;
+    display: block;
+    z-index: 2;
+}
+
+.video-panel__grain {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Match video dimensions and rotation exactly */
+    width: calc(100vh - 30vmin);
+    aspect-ratio: 16 / 9;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    /* Starts disabled — enable via grain control panel */
+}
+
+/* Social link in video panel */
+.video-panel__social-link {
+    position: absolute !important;
+    /* Positioned in the black margin, bottom right of the whole panel */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: calc(50vw + ((100vh - 30vmin) * 9 / 32) + 4px) !important;
+
+    font-family: var(--font-body);
+    font-size: clamp(0.875rem, 1.35vw, 1.125rem) !important;
+    font-weight: 300 !important;
+    color: #888 !important;
+    text-decoration: none !important;
+    z-index: 10000 !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
+    transition: color 0.3s ease;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    line-height: 1 !important;
+    /* Ensure baseline alignment is clean */
+}
+
+.video-panel__social-link:hover {
+    color: var(--color-accent-red) !important;
+}
+
+/* Grain Control Panel */
+.grain-controls {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(10, 12, 11, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 1.2rem;
+    width: 190px;
+    transition: all 0.3s ease;
+}
+
+/* Wave Controls panel — same styling, mirrored to the left */
+.grain-controls--left {
+    right: auto;
+    left: var(--spacing-lg);
+}
+
+/* Hero Wave Controls panel — positioned at bottom left */
+#hero-wave-controls {
+    top: auto;
+    bottom: var(--spacing-lg);
+    right: auto;
+    left: var(--spacing-lg);
+}
+
+.grain-controls.is-collapsed {
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    width: auto;
+    padding: 0.5rem;
+}
+
+.grain-controls__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.grain-controls.is-collapsed .grain-controls__header {
+    margin-bottom: 0;
+}
+
+.grain-controls__title {
+    font-family: var(--font-body);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0;
+}
+
+.grain-controls.is-collapsed .grain-controls__title {
+    display: none;
+}
+
+.grain-controls__toggle {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.1);
+    /* Very dark gray, almost invisible */
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.grain-controls__toggle:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.grain-controls__reset {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    margin-left: 6px;
+    transition: color 0.2s, transform 0.3s;
+}
+
+.grain-controls__reset:hover {
+    color: rgba(255, 255, 255, 0.8);
+    transform: rotate(-45deg);
+}
+
+.grain-controls.is-collapsed .grain-controls__body {
+    display: none;
+}
+
+.grain-knob-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.grain-knob-group label {
+    font-family: var(--font-body);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.grain-knob-group input[type=range] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+    height: 18px;
+    cursor: pointer;
+}
+
+.grain-knob-group input[type=range]::-webkit-slider-runnable-track {
+    height: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 1px;
+}
+
+.grain-knob-group input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: var(--color-accent-red);
+    margin-top: -5px;
+    box-shadow: 0 0 4px rgba(217, 37, 37, 0.5);
+}
+
+.grain-knob-val {
+    font-family: var(--font-body);
+    font-size: 0.62rem;
+    color: rgba(255, 255, 255, 0.35);
+    text-align: right;
+}
+
+
+/* ── Portrait mobile: handled by universal rotation above ── */
+
+/* Mute icon toast overlay */
+.video-panel__mute-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-light);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+}
+
+.video-panel__mute-icon svg {
+    width: 34px;
+    height: 34px;
+}
+
+.video-panel__mute-icon.is-visible {
+    animation: mute-icon-flash 1.2s ease forwards;
+}
+
+@keyframes mute-icon-flash {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Footer =============================== */
+footer.panel {
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Audio Toggle Button ================== */
+.audio-toggle {
+    position: absolute;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    /* Movemos a la izquierda para que no peleé con el centro ni con los knobs a la derecha */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 50;
+    /* Aumentado por si el canvas o hero_content lo tapan */
+    opacity: 0.5;
+    transition: opacity 0.4s ease;
+    padding: 0;
+}
+
+.audio-toggle:hover {
+    opacity: 1;
+}
+
+.audio-toggle__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    /* Changed from pill to circle */
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1;
+    transition: border-color 0.4s ease, color 0.4s ease, transform 0.2s ease;
+}
+
+.audio-toggle:active .audio-toggle__icon {
+    transform: scale(0.95);
+}
+
+/* Active state — sound is on (State 1 or 2) */
+.audio-toggle.is-active .audio-toggle__icon {
+    border-color: var(--color-accent-red);
+    color: var(--color-accent-red);
+}
+
+.audio-toggle.is-active {
+    opacity: 0.85;
+}
+
+/* ==========================================================================
+   Audio Control Panel (Knobs)
+   ========================================================================== */
+.audio-controls {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    background: rgba(10, 12, 11, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    width: 280px;
+    transition: var(--transition-smooth);
+    /* Hidden by default — shown when audio is active */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+}
+
+.audio-controls.is-collapsed {
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    width: auto;
+    padding: 0.5rem;
+}
+
+.audio-controls__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.audio-controls.is-collapsed .audio-controls__header {
+    margin-bottom: 0;
+}
+
+.audio-controls__title {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0;
+}
+
+.audio-controls.is-collapsed .audio-controls__title {
+    display: none;
+}
+
+.audio-controls__toggle {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.audio-controls__toggle:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.audio-controls.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.knobs-grid {
+    display: none;
+    /* Ocultos por defecto */
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Mostrar el grid correspondiente según el modo */
+.audio-controls.is-synth .knobs-grid--synth {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.audio-controls.is-sample .knobs-grid--sample {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.audio-controls.is-collapsed .knobs-grid {
+    display: none !important;
+}
+
+.knob-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.knob-group label {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.knob-group input[type=range] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+.knob-group input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: var(--color-accent-red);
+    cursor: pointer;
+    margin-top: -5px;
+    box-shadow: 0 0 5px rgba(217, 37, 37, 0.5);
+}
+
+.knob-group input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 2px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1px;
+}
+
+.knob-group input[type=range]:focus {
+    outline: none;
+}
+
+.knob-val {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+    align-self: flex-end;
+}
+
+/* Nuevos Toggles de Efectos para Sintetizador */
+.synth-effects-toggles {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.effect-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.effect-toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.effect-toggle input[type="checkbox"]:checked {
+    background: var(--color-accent-red);
+    border-color: var(--color-accent-red);
+}
+
+.effect-toggle input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    width: 3px;
+    height: 6px;
+    border: solid var(--color-bg-dark);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.effect-toggle__text {
+    font-family: var(--font-body);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.2s ease;
+}
+
+.effect-toggle:hover .effect-toggle__text {
+    color: var(--color-text-light);
+}
+
+/* ==========================================================================
+   Eva Candil — Spotify Album Panel
+   ========================================================================== */
+.spotify-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    overflow: hidden;
+}
+
+.spotify-panel__inner {
+    width: min(520px, 90vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+}
+
+.spotify-panel__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.spotify-panel__title {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    font-weight: 300;
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    letter-spacing: -1px;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+}
+
+.spotify-panel__year {
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 1.4vw, 1rem);
+    font-weight: 300;
+    opacity: 0.45;
+    color: var(--color-text-light);
+}
+
+.spotify-panel__desc {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 1.35vw, 1rem);
+    font-weight: 300;
+    color: #888;
+    line-height: 1.6;
+    max-width: 38ch;
+}
+
+.spotify-panel__divider {
+    width: 2rem;
+    height: 1px;
+    background: var(--color-accent-red);
+    opacity: 0.65;
+    border-radius: 2px;
+}
+
+.spotify-panel__embed {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(217, 37, 37, 0.04);
+}
+
+.spotify-panel__embed iframe {
+    display: block;
+    border-radius: 12px;
+}
+
+/* Eva Candil Dot Frame Canvas */
+.eva-dots-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.spotify-panel__inner {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   Floating Navigation
+   ========================================================================== */
+
+.float-nav {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    z-index: 9999 !important;
+    pointer-events: none;
+}
+
+.float-nav.is-open {
+    pointer-events: auto;
+}
+
+/* --- Trigger Button (Pulsing Wave) --- */
+.float-nav__trigger {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 50px;
+    height: 50px;
+    /* Translate to center the button visually on the anchor point, or just leave it inside */
+    transform: translate(0, 0);
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Trigger Button (Stacked Waves) --- */
+.float-nav__trigger {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.9);
+    /* Darker "black" circle */
+    backdrop-filter: blur(8px);
+    border: none;
+    /* Removed white border */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.3s ease, transform 0.3s ease;
+    overflow: hidden;
+}
+
+.float-nav__trigger:hover {
+    transform: scale(1.05);
+}
+
+.nav-wave-icon {
+    width: 32px;
+    height: 32px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.43s var(--transition-smooth);
+}
+
+.nav-wave {
+    transition: stroke 0.43s var(--transition-smooth);
+    animation: waveFlow 2.5s infinite linear;
+}
+
+/* 5 perfectly synchronized waves with varying opacities */
+.nav-wave--1 {
+    opacity: 1.0;
+}
+
+.nav-wave--2 {
+    opacity: 0.8;
+}
+
+.nav-wave--3 {
+    opacity: 0.6;
+}
+
+.nav-wave--4 {
+    opacity: 0.45;
+}
+
+.nav-wave--5 {
+    opacity: 0.3;
+}
+
+@keyframes waveFlow {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-20px);
+        /* Moves exactly one wave cycle for a seamless loop */
+    }
+}
+
+/* Interaction States for Trigger */
+.float-nav__trigger:hover .nav-wave-icon,
+.float-nav.is-open .nav-wave-icon {
+    color: var(--color-accent-red);
+}
+
+.float-nav__trigger:hover .nav-wave,
+.float-nav.is-open .nav-wave {
+    animation-duration: 1.5s;
+    /* Intensify wave motion on active/hover */
+}
+
+/* --- Expandable Menu List --- */
+.float-nav__list {
+    position: absolute;
+    bottom: 60px;
+    /* Above the trigger */
+    right: 0px;
+    /* Aligned to right */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-xs);
+    width: max-content;
+    /* Ensure items don't wrap */
+}
+
+/* Individual Items (hidden by default, revealed by JS/GSAP) */
+.float-nav__item {
+    opacity: 0;
+    transform: translateY(15px);
+    /* Slide up from bottom */
+}
+
+/* The actual link buttons */
+.float-nav__link {
+    background: none;
+    border: none;
+    color: rgba(245, 245, 245, 0.6);
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 8px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
+    text-align: right;
+    outline: none;
+}
+
+.float-nav__link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 8px;
+    /* Align line with right-justified text */
+    width: 0%;
+    height: 1px;
+    background-color: var(--color-accent-red);
+    transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.float-nav__link:hover,
+.float-nav__link:focus-visible {
+    color: var(--color-text-light);
+}
+
+.float-nav__link:hover::after,
+.float-nav__link:focus-visible::after {
+    width: calc(100% - 16px);
+}
+
+/* Active State */
+.float-nav__link.is-active {
+    color: var(--color-text-light);
+    font-weight: 500;
+}
+
+.float-nav__link.is-active::after {
+    width: calc(100% - 16px);
+    background-color: var(--color-text-light);
+}
