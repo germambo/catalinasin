@@ -18,6 +18,7 @@ gsap.registerPlugin(Observer);
 let sections = [];
 let currentIndex = -1;
 let animating = false;
+let heroSectionActive = true; // tracks whether the hero is the current visible section
 
 document.addEventListener("DOMContentLoaded", () => {
     // Gather all fullpage sections: Hero + Works + Footer
@@ -154,6 +155,17 @@ function gotoSection(index, direction, initialOffset = 0) {
     gsap.killTweensOf([fromSection, toSection]);
 
     let dFactor = direction === 1 ? -1 : 1;
+
+    // Immediately handle hero audio when navigating away from hero
+    // (don't wait for onComplete—silence it right at transition start)
+    if (currentIndex === 0 && index !== 0) {
+        heroSectionActive = false;
+        if (typeof stopHeroWaves === 'function') stopHeroWaves();
+        if (audioCtx) audioCtx.suspend();
+    } else if (index === 0) {
+        heroSectionActive = true;
+    }
+
     let tl = gsap.timeline({
         defaults: { duration: 1.0, ease: "power3.out" },
         onComplete: () => {
@@ -189,20 +201,12 @@ function gotoSection(index, direction, initialOffset = 0) {
                 }
             }
 
-            // --- HERO SECTION RESOURCE MANAGEMENT ---
+            // --- HERO SECTION RESOURCE MANAGEMENT (on-complete reinforcement) ---
             if (index === 0) {
-                // We are on the Hero section
+                // Arrived at Hero — restart canvas & resume audio if needed
                 if (typeof startHeroWaves === 'function') startHeroWaves();
-                // Resume audio processing if it was enabled
                 if (audioCtx && audioState !== 0) {
                     audioCtx.resume();
-                }
-            } else {
-                // We left the Hero section
-                if (typeof stopHeroWaves === 'function') stopHeroWaves();
-                // Suspend audio processing to save CPU
-                if (audioCtx) {
-                    audioCtx.suspend();
                 }
             }
         }
@@ -2245,8 +2249,8 @@ document.addEventListener('visibilitychange', () => {
             // Suspend audio processing completely when tab is hidden
             audioCtx.suspend();
         } else {
-            // Resume only if audio was active (State 1, 2 or 3)
-            if (audioState !== 0) {
+            // Resume only if audio was active AND we are on the hero section
+            if (audioState !== 0 && heroSectionActive) {
                 audioCtx.resume();
             }
         }
