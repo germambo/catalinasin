@@ -163,20 +163,13 @@ function gotoSection(index, direction, initialOffset = 0) {
         if (typeof stopHeroWaves === 'function') stopHeroWaves();
         if (audioCtx) {
             const now = audioCtx.currentTime;
-            const FADE = 0.3; // seconds
-            // Fade out both gain channels smoothly to avoid click/pop
-            if (masterGain) {
-                masterGain.gain.cancelScheduledValues(now);
-                masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-                masterGain.gain.linearRampToValueAtTime(0, now + FADE);
-            }
-            if (sampleGain) {
-                sampleGain.gain.cancelScheduledValues(now);
-                sampleGain.gain.setValueAtTime(sampleGain.gain.value, now);
-                sampleGain.gain.linearRampToValueAtTime(0, now + FADE);
-            }
-            // Suspend after fade completes
-            setTimeout(() => { if (audioCtx) audioCtx.suspend(); }, FADE * 1000 + 50);
+            const FADE_TC = 0.15; // time constant — ~63% decay per FADE_TC seconds (~0.5s to silence)
+            // Use setTargetAtTime instead of linearRamp — it never produce clicks even
+            // when other setTargetAtTime calls are in flight (Web Audio spec §3.4)
+            if (masterGain) masterGain.gain.setTargetAtTime(0, now, FADE_TC);
+            if (sampleGain) sampleGain.gain.setTargetAtTime(0, now, FADE_TC);
+            // Suspend after gain has had time to reach near-zero (~5 × TC)
+            setTimeout(() => { if (audioCtx) audioCtx.suspend(); }, FADE_TC * 5 * 1000);
         }
     } else if (index === 0) {
         heroSectionActive = true;
