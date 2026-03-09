@@ -155,7 +155,7 @@ function gotoSection(index, direction, initialOffset = 0) {
 
     let dFactor = direction === 1 ? -1 : 1;
     let tl = gsap.timeline({
-        defaults: { duration: 1.0, ease: "slow(0.7, 0.7, false)" }, // smoother "standard" ease
+        defaults: { duration: 1.0, ease: "power3.out" },
         onComplete: () => {
             animating = false;
             // Drive video panel lifecycle after the transition lands
@@ -188,6 +188,23 @@ function gotoSection(index, direction, initialOffset = 0) {
                     if (typeof stopRippleLoop === 'function') stopRippleLoop();
                 }
             }
+
+            // --- HERO SECTION RESOURCE MANAGEMENT ---
+            if (index === 0) {
+                // We are on the Hero section
+                if (typeof startHeroWaves === 'function') startHeroWaves();
+                // Resume audio processing if it was enabled
+                if (audioCtx && audioState !== 0) {
+                    audioCtx.resume();
+                }
+            } else {
+                // We left the Hero section
+                if (typeof stopHeroWaves === 'function') stopHeroWaves();
+                // Suspend audio processing to save CPU
+                if (audioCtx) {
+                    audioCtx.suspend();
+                }
+            }
         }
     });
 
@@ -203,29 +220,32 @@ function gotoSection(index, direction, initialOffset = 0) {
         0
     );
 
-    // Animate NEXT section in (maintaining the peeked pixel offset but at its start percentage)
+    // Animate NEXT section in — starts purely from its off-screen percentage (no y offset)
+    // Using y: initialOffset as the start caused a compound position that looked like a bounce
     tl.fromTo(toSection,
-        { yPercent: -100 * dFactor, y: initialOffset },
+        { yPercent: -100 * dFactor, y: 0 },
         { yPercent: 0, y: 0, duration: 0.8, ease: "power3.out" },
         0
     );
 
-    // If animating into a work item, trigger its internal text reveal
-    let content = toSection.querySelector('.work-item__content');
+    // Trigger internal content reveal on the incoming section
+    // Works for: work-item panels (.work-item__content),
+    //            Eva Candil (.spotify-panel__inner),
+    //            Agua Brasil (.video-panel__video)
+    let content = toSection.querySelector('.work-item__content')
+        || toSection.querySelector('.spotify-panel__inner')
+        || toSection.querySelector('.video-panel__video');
     if (content) {
-        // Prepare content position based on direction before animating
-        gsap.set(content, { autoAlpha: 0, y: -50 * dFactor });
-        tl.to(content, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 0.5);
+        gsap.set(content, { autoAlpha: 0, y: -40 * dFactor });
+        tl.to(content, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power2.out" }, 0.35);
     }
 
-    // Hide the previous section after animation finishes to prevent artifacts
-    tl.set(fromSection, { autoAlpha: 0 });
-
-    // Reset PREVIOUS section's internal text for next time it appears
-    let prevContent = fromSection.querySelector('.work-item__content');
+    // Reset OUTGOING section's inner content so it's ready for next entry
+    let prevContent = fromSection.querySelector('.work-item__content')
+        || fromSection.querySelector('.spotify-panel__inner')
+        || fromSection.querySelector('.video-panel__video');
     if (prevContent) {
-        // Resetting to match the exit direction visually
-        tl.set(prevContent, { autoAlpha: 0, y: 50 * dFactor });
+        tl.set(prevContent, { autoAlpha: 1, y: 0 });
     }
 
     currentIndex = index;
@@ -243,11 +263,12 @@ window.addEventListener('pagehide', () => {
 });
 
 // ==========================================================================
-//   Interactive Soundwave Canvas
+//   Interactive Soundwave Canvas (Hero Section)
 // ==========================================================================
 
 const canvas = document.getElementById('soundwave-canvas');
 const ctx = canvas.getContext('2d');
+let heroAnimId = null;
 
 let width, height;
 let mouse = { x: 0, y: 0, targetX: 0, targetY: 0, targetStrength: 0, strength: 0 };
@@ -300,14 +321,14 @@ window.addEventListener('resize', resizeCanvas);
 let heroWaveConfig = {
     opacity: 0.1,   // alpha of each wave line
     waveCount: 43,    // number of wave lines
-    deflection: 15.0,  // cursor drag strength (the "arrastre" multiplier)
+    deflection: 4.5,  // cursor drag strength (the "arrastre" multiplier)
     amplitude: 55,    // base wave height in px
     frequency: 0.045, // horizontal wave frequency
     speed: 0.0195,// phase advance per frame
     gravityRadius: 224,   // px — cursor influence radius (0 = disabled)
     lineWidth: 1.0,   // base stroke width in px
     randomness: 1.0,   // multiplier for index-based offsets
-    gravityPull: 1.05, // cohesive vertical pull strength
+    gravityPull: 1.0, // cohesive vertical pull strength
 };
 
 // Store defaults for reset functionality
@@ -510,12 +531,26 @@ function drawWaves() {
         );
     }
 
-    requestAnimationFrame(drawWaves);
+    heroAnimId = requestAnimationFrame(drawWaves);
+}
+
+function startHeroWaves() {
+    if (!heroAnimId) {
+        heroAnimId = requestAnimationFrame(drawWaves);
+    }
+}
+
+function stopHeroWaves() {
+    if (heroAnimId) {
+        cancelAnimationFrame(heroAnimId);
+        heroAnimId = null;
+    }
 }
 
 // Boot up
 resizeCanvas();
-drawWaves();
+startHeroWaves();
+
 
 
 // ==========================================================================
