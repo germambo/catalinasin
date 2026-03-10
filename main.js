@@ -384,10 +384,16 @@ let heroWaveConfig = {
     frequency: 0.045, // horizontal wave frequency
     speed: 0.0195,// phase advance per frame
     gravityRadius: 224,   // px — cursor influence radius (0 = disabled)
-    lineWidth: 1.0,   // base stroke width in px
+    lineWidth: 1.5,   // base stroke width in px
     randomness: 1.0,   // multiplier for index-based offsets
     gravityPull: 1.0, // cohesive vertical pull strength
+    mouseLerp: 0.040,  // suavizado de posición (inercia seguimiento)
+    strengthLerp: 0.032, // suavizado de intensidad (inercia fuerza)
+    impactLerp: 0.076 // suavizado de deformación (gradualidad impacto)
 };
+
+// State array to smooth per-wave interaction
+let waveTouchStates = new Float32Array(100).fill(0);
 
 // Store defaults for reset functionality
 const defaultHeroWaveConfig = { ...heroWaveConfig };
@@ -434,9 +440,9 @@ let chaosAccum = 0; // accumulated chaos from touch, reset each frame
 // Draw frame
 function drawWaves() {
     // Lerp mouse for smooth following
-    mouse.x += (mouse.targetX - mouse.x) * 0.05;
-    mouse.y += (mouse.targetY - mouse.y) * 0.05;
-    mouse.strength += (mouse.targetStrength - mouse.strength) * 0.05; // smooth fade in/out
+    mouse.x += (mouse.targetX - mouse.x) * heroWaveConfig.mouseLerp;
+    mouse.y += (mouse.targetY - mouse.y) * heroWaveConfig.mouseLerp;
+    mouse.strength += (mouse.targetStrength - mouse.strength) * heroWaveConfig.strengthLerp; // smooth fade in/out
 
     ctx.clearRect(0, 0, width, height);
 
@@ -496,8 +502,16 @@ function drawWaves() {
             // Apply interaction strength for smooth fade
             touchIntensity = Math.pow(rawIntensity, 2.5) * mouse.strength;
             hitHeightNormalized = pureYAtMouseX / masterAmplitude;
-            if (touchIntensity > maxTouchIntensity) maxTouchIntensity = touchIntensity;
         }
+
+        // --- SMOOTHING: Gradual Impact ---
+        // Lerp the specific touch intensity of this wave line for a more organic feel
+        if (index < waveTouchStates.length) {
+            waveTouchStates[index] += (touchIntensity - waveTouchStates[index]) * heroWaveConfig.impactLerp;
+        }
+        const activeIntensity = waveTouchStates[index] || 0;
+
+        if (activeIntensity > maxTouchIntensity) maxTouchIntensity = activeIntensity;
 
         // Draw the wave horizontally
         for (let x = 0; x <= width; x += 4) {
@@ -527,18 +541,18 @@ function drawWaves() {
                 // 2. GRAVEDAD COHERENTE:
                 // Tirón unificado de la masa controlable por heroWaveConfig.gravityPull
                 const verticalPull = (mouse.y - waveYAtMouseX);
-                const coherentGravity = (verticalPull * heroWaveConfig.gravityPull) * touchIntensity;
+                const coherentGravity = (verticalPull * heroWaveConfig.gravityPull) * activeIntensity;
 
                 // 3. ACOMPAÑAMIENTO ORGÁNICO / RANDOM:
                 // Multiplicador influenciado por la aleatoriedad general
-                const organicResistance = Math.cos(index * 3 * (heroWaveConfig.randomness > 0 ? heroWaveConfig.randomness : 0.001) + masterPhase * 2 + distX * 0.01) * (masterAmplitude * 0.8) * touchIntensity;
+                const organicResistance = Math.cos(index * 3 * (heroWaveConfig.randomness > 0 ? heroWaveConfig.randomness : 0.001) + masterPhase * 2 + distX * 0.01) * (masterAmplitude * 0.8) * activeIntensity;
 
                 // 4. DESVÍO DIRECCIONAL HACIA LAS ESQUINAS (Efecto "Responsive")
                 // Calculamos a qué altura del lienzo estás tocando (Negativo = Mitad superior, Positivo = Mitad inferior)
                 const touchHeightOffset = mouse.y - startY;
 
                 // Deflexión extrema — controlada por heroWaveConfig.deflection
-                const deflection = touchHeightOffset * heroWaveConfig.deflection * (distX / width) * touchIntensity;
+                const deflection = touchHeightOffset * heroWaveConfig.deflection * (distX / width) * activeIntensity;
 
                 // Combinamos la gravedad y resistencia local (que se apagan con rightTrailIntensity)
                 // y le sumamos la deflexión direccional (que en vez de apagarse, crece hacia el borde derecho).
@@ -548,7 +562,7 @@ function drawWaves() {
                 // Mantenemos el desorden fluido (marea) para el tramado hermoso en las colas.
                 // AÑADIDO: Si la intensidad es máxima (tacto directo), la fase explota (REDUCIDO DE 15 A 3)
                 const extraRandomCenter = 0; // bajado a 0 a pedido del usuario
-                chaosPhase += Math.sin(x * 0.006 + index * 6 + masterPhase * 2.0) * extraRandomCenter * rightTrailIntensity * touchIntensity * entrySmoothness;
+                chaosPhase += Math.sin(x * 0.006 + index * 6 + masterPhase * 2.0) * extraRandomCenter * rightTrailIntensity * activeIntensity * entrySmoothness;
             }
 
             // Pure Sinusoidal Formula + Chaos Phase + Gravity Pull
@@ -1909,6 +1923,9 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'hw-gravitypull', key: 'gravityPull', format: v => `${v.toFixed(2)}x` },
         { id: 'hw-gravity', key: 'gravityRadius', format: v => `${v}px` },
         { id: 'hw-linewidth', key: 'lineWidth', format: v => `${v.toFixed(1)}px` },
+        { id: 'hw-mouselerp', key: 'mouseLerp', format: v => `${v.toFixed(3)}` },
+        { id: 'hw-strengthlerp', key: 'strengthLerp', format: v => `${v.toFixed(3)}` },
+        { id: 'hw-impactlerp', key: 'impactLerp', format: v => `${v.toFixed(3)}` },
     ];
 
     heroWaveBindings.forEach(({ id, key, format, onchange }) => {
