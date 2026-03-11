@@ -971,8 +971,9 @@ a {
     -webkit-appearance: none;
     width: 100%;
     background: transparent;
-    height: 18px;
+    height: 32px; /* Mayor área de interacción */
     cursor: pointer;
+    margin: -7px 0; /* Compensa el aumento de altura para mantener el espaciado visual */
 }
 
 .grain-knob-group input[type=range]::-webkit-slider-runnable-track {
@@ -1083,7 +1084,84 @@ a {
     animation: mute-icon-flash 1.0s ease forwards;
 }
 
+/* *** PANEL TEMPORAL: Control ícono menú ripple *** */
+.ripple-nav-ctrl {
+    position: fixed;
+    bottom: 115px;         /* justo encima del botón de 75px + margen */
+    right: 22px;
+    z-index: 10000;
+    background: rgba(10, 12, 11, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    width: 190px;
+    font-family: var(--font-body);
+    transition: width 0.25s ease, padding 0.25s ease;
+}
+
+.ripple-nav-ctrl.is-collapsed {
+    width: auto;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+}
+
+.ripple-nav-ctrl__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.ripple-nav-ctrl.is-collapsed .ripple-nav-ctrl__header {
+    margin-bottom: 0;
+}
+
+.ripple-nav-ctrl__title {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+.ripple-nav-ctrl__toggle {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    transition: color 0.2s, opacity 0.2s;
+}
+
+.ripple-nav-ctrl.is-collapsed .ripple-nav-ctrl__toggle {
+    opacity: 0.08;
+}
+
+.ripple-nav-ctrl.is-collapsed .ripple-nav-ctrl__toggle:hover {
+    opacity: 0.8;
+}
+
+.ripple-nav-ctrl__body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ripple-nav-ctrl.is-collapsed .ripple-nav-ctrl__body {
+    display: none;
+}
+/* *** FIN PANEL TEMPORAL *** */
+
 /* Footer =============================== */
+
 footer.panel {
     text-align: center;
     font-family: var(--font-body);
@@ -1288,6 +1366,9 @@ footer.panel {
     -webkit-appearance: none;
     width: 100%;
     background: transparent;
+    height: 32px; /* Mayor área de interacción */
+    cursor: pointer;
+    margin: -10px 0; /* Compensa el aumento de altura para mantener el espaciado visual */
 }
 
 .knob-group input[type=range]::-webkit-slider-thumb {
@@ -1509,19 +1590,16 @@ footer.panel {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* --- Trigger Button (Stacked Waves) --- */
+/* --- Trigger Button (Ripple Rings) --- */
 .float-nav__trigger {
     position: absolute;
     bottom: 0px;
     right: 0px;
-    width: 50px;
-    height: 50px;
+    width: 75px;
+    height: 75px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.9);
-    /* Darker "black" circle */
-    backdrop-filter: blur(8px);
+    background: transparent;
     border: none;
-    /* Removed white border */
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1537,66 +1615,38 @@ footer.panel {
     transform: scale(1.05);
 }
 
-.nav-wave-icon {
-    width: 32px;
-    height: 32px;
+/* --- Ripple Icon --- */
+.nav-ripple-icon {
+    width: 52px;
+    height: 52px;
     color: rgba(255, 255, 255, 0.6);
-    transition: color 0.43s var(--transition-smooth);
+    transition: color 0.4s ease;
+    overflow: visible;
 }
 
-.nav-wave {
-    transition: stroke 0.43s var(--transition-smooth);
-    animation: waveFlow 2.5s infinite linear;
+/* Base ring — animation & transform-origin applied inline by JS */
+.nav-ripple {
+    transform-origin: 24px 24px;
 }
 
-/* 5 perfectly synchronized waves with varying opacities */
-.nav-wave--1 {
-    opacity: 1.0;
+@keyframes rippleRing {
+    0%   { transform: scale(0.5);  opacity: 0; }
+    12%  { opacity: 0.85; }
+    65%  { opacity: 0.3; }
+    100% { transform: scale(1.2);  opacity: 0; }
 }
 
-.nav-wave--2 {
-    opacity: 0.8;
-}
-
-.nav-wave--3 {
-    opacity: 0.6;
-}
-
-.nav-wave--4 {
-    opacity: 0.45;
-}
-
-.nav-wave--5 {
-    opacity: 0.3;
-}
-
-@keyframes waveFlow {
-    from {
-        transform: translateX(0);
-    }
-
-    to {
-        transform: translateX(-20px);
-        /* Moves exactly one wave cycle for a seamless loop */
-    }
-}
-
-/* Interaction States for Trigger */
-.float-nav__trigger:hover .nav-wave-icon,
-.float-nav.is-open .nav-wave-icon {
+/* Interaction States — solo color, sin tocar la duracion para evitar salto */
+.float-nav__trigger:hover .nav-ripple-icon,
+.float-nav.is-open .nav-ripple-icon {
     color: var(--color-accent-red);
 }
 
-.float-nav__trigger:hover .nav-wave,
-.float-nav.is-open .nav-wave {
-    animation-duration: 1.5s;
-    /* Intensify wave motion on active/hover */
-}
 
 /* --- Expandable Menu List --- */
 .float-nav__list {
     position: absolute;
-    bottom: 60px;
+    bottom: 80px;
     /* Above the trigger */
     right: 0px;
     /* Aligned to right */

@@ -1005,7 +1005,58 @@
 
     </main>
 
+    <!-- *** PANEL TEMPORAL: Control del ícono ripple del menú *** -->
+    <div id="ripple-nav-controls" class="ripple-nav-ctrl is-collapsed">
+        <div class="ripple-nav-ctrl__header" style="justify-content: flex-end;">
+            <button class="ripple-nav-ctrl__toggle" id="ripple-nav-ctrl-toggle" title="Mostrar/ocultar">−</button>
+        </div>
+        <div class="ripple-nav-ctrl__body" id="ripple-nav-ctrl-body">
+            <div class="grain-knob-group">
+                <label for="rnc-count">Cant. anillos</label>
+                <input type="range" id="rnc-count" min="1" max="8" value="8" step="1">
+                <span class="grain-knob-val" id="val-rnc-count">8</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-speed">Velocidad</label>
+                <input type="range" id="rnc-speed" min="0.5" max="9" value="3.0" step="0.1">
+                <span class="grain-knob-val" id="val-rnc-speed">3.0s</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-delay">Delay entre anillos</label>
+                <input type="range" id="rnc-delay" min="0" max="2.5" value="0.10" step="0.05">
+                <span class="grain-knob-val" id="val-rnc-delay">0.10s</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-scale-from">Escala inicio</label>
+                <input type="range" id="rnc-scale-from" min="0.05" max="0.95" value="0.95" step="0.05">
+                <span class="grain-knob-val" id="val-rnc-scale-from">0.95</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-scale-to">Escala fin</label>
+                <input type="range" id="rnc-scale-to" min="1.0" max="2.2" value="1.20" step="0.05">
+                <span class="grain-knob-val" id="val-rnc-scale-to">1.20</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-opacity">Opacidad pico</label>
+                <input type="range" id="rnc-opacity" min="0.05" max="1.0" value="0.95" step="0.05">
+                <span class="grain-knob-val" id="val-rnc-opacity">0.95</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-stroke">Grosor trazos</label>
+                <input type="range" id="rnc-stroke" min="0.2" max="3.5" value="1.0" step="0.1">
+                <span class="grain-knob-val" id="val-rnc-stroke">1.0px</span>
+            </div>
+            <div class="grain-knob-group">
+                <label for="rnc-irregularity">No circularidad</label>
+                <input type="range" id="rnc-irregularity" min="0" max="1" value="0.15" step="0.05">
+                <span class="grain-knob-val" id="val-rnc-irregularity">0.15</span>
+            </div>
+        </div>
+    </div>
+    <!-- *** FIN PANEL TEMPORAL *** -->
+
     <!-- Floating Navigation -->
+
     <nav class="float-nav" id="float-nav" aria-label="Navegación de secciones">
         <!-- Expandable menu list -->
         <ul class="float-nav__list" id="float-nav-list" role="menu">
@@ -1026,23 +1077,8 @@
         <!-- Trigger button: Stacked horizontal "S" waves -->
         <button class="float-nav__trigger" id="float-nav-trigger" aria-expanded="false" aria-controls="float-nav-list"
             aria-label="Abrir menú de navegación">
-            <svg class="nav-wave-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Five perfectly synchronized repeating waves -->
-                <path class="nav-wave nav-wave--1"
-                    d="M0 10 C5 10 5 6 10 6 C15 6 15 10 20 10 C25 10 25 6 30 6 C35 6 35 10 40 10 C45 10 45 6 50 6 C55 6 55 10 60 10"
-                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path class="nav-wave nav-wave--2"
-                    d="M0 16 C5 16 5 12 10 12 C15 12 15 16 20 16 C25 16 25 12 30 12 C35 12 35 16 40 16 C45 16 45 12 50 12 C55 12 55 16 60 16"
-                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path class="nav-wave nav-wave--3"
-                    d="M0 22 C5 22 5 18 10 18 C15 18 15 22 20 22 C25 22 25 18 30 18 C35 18 35 22 40 22 C45 22 45 18 50 18 C55 18 55 22 60 22"
-                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path class="nav-wave nav-wave--4"
-                    d="M0 28 C5 28 5 24 10 24 C15 24 15 28 20 28 C25 28 25 24 30 24 C35 24 35 28 40 28 C45 28 45 24 50 24 C55 24 55 28 60 28"
-                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
-                <path class="nav-wave nav-wave--5"
-                    d="M0 34 C5 34 5 30 10 30 C15 30 15 34 20 34 C25 34 25 30 30 30 C35 30 35 34 40 34 C45 34 45 30 50 30 C55 30 55 34 60 34"
-                    stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+            <svg class="nav-ripple-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- rings injected by JS -->
             </svg>
         </button>
     </nav>

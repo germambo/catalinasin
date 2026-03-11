@@ -973,6 +973,13 @@ document.addEventListener('DOMContentLoaded', () => {
         seqResetBtn.addEventListener('click', () => {
             sequencerGrid.fill(null);
             document.querySelectorAll('.seq-cell.is-active').forEach(c => c.classList.remove('is-active'));
+            
+            // Reset velocity to default (0.40)
+            const speedKnob = document.getElementById('knob-seq-speed');
+            if (speedKnob) {
+                speedKnob.value = 0.40;
+                speedKnob.dispatchEvent(new Event('input'));
+            }
         });
     }
 
@@ -1085,7 +1092,7 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
     // T_pitch is usually T (smooth), but for Arpeggiator it will be instantaneous (0.01)
     let T_pitch = T;
 
-    if (audioState === 4 || audioState === 0) {
+    if (audioState === 4 || audioState === 0 || audioState === 5) {
         // --- LAYER 2: Barrido Continuo (GLIDE) ---
         let floatIndex = baseIndex + continuousJump;
 
@@ -1102,8 +1109,8 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
 
         finalPitch = freqLow + (freqHigh - freqLow) * fraction;
 
-    } else if (audioState === 2) {
-        // --- LAYER 2: GRID SEQUENCER (STATE 2 - Pentagrama) ---
+    } else if (audioState === 1) {
+        // --- LAYER 2: GRID SEQUENCER (STATE 1 - Pentagrama) ---
         // Velocidad leída dinámicamente, con la lógica invertida: 
         // 0.55 - valor (slider a la derecha 0.5 = arpSpeed 0.05 = RÁPIDO)
         const speedKnob = document.getElementById('knob-seq-speed');
@@ -1141,6 +1148,40 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
 
         T_pitch = 0.01; // Notas punzantes instantáneas
 
+    } else if (audioState === 2) {
+        // Velocidad del arpegio (fija a 150ms o podría mapearse a un knob visual)
+        const arpSpeed = 0.15; // seg
+
+        if (now - arpLastTime > arpSpeed) {
+            arpStep++;
+            arpLastTime = now;
+        }
+
+        // ¿Hacia dónde saltamos? Direction + o -
+        let jumpDirection = continuousJump >= 0 ? 1 : -1;
+        // Cuántos saltos máximos (0 a 10)
+        // Usamos Math.ceil para que NO haya zona muerta en el centro.
+        // Además, obligamos a que siempre haya al menos 1 paso de movimiento musical
+        // para evitar que el arpegio se "congele" en una nota sola en el medio.
+        let maxSteps = Math.max(1, Math.ceil(Math.abs(continuousJump)));
+
+        // Si maxSteps es 0, repetimos la misma nota principal
+        let stepInCycle = arpStep % (maxSteps * 2);
+        let noteOffset = 0;
+
+        if (stepInCycle < maxSteps) {
+            noteOffset = stepInCycle * jumpDirection;
+        } else {
+            noteOffset = (maxSteps * 2 - stepInCycle) * jumpDirection;
+        }
+
+        let activeIndex = baseIndex + noteOffset;
+        activeIndex = Math.max(0, Math.min(activeIndex, currentScale.length - 1));
+        finalPitch = currentScale[activeIndex];
+
+        // Cambio instantáneo para efecto "secuenciador", no portamento
+        T_pitch = 0.01;
+
     } else if (audioState === 3) {
         // --- LAYER 2: AIRWOLF THEME SEQUENCER (STATE 3) ---
         // Velocidad constante del arpegio estilo "gallop"
@@ -1160,44 +1201,6 @@ function updateAudio(touchIntensity, mouseXNorm, mouseYNorm, masterPh, snapshot,
         // Cambio instantáneo para efecto "secuenciador", no portamento
         T_pitch = 0.01;
 
-    } else if (audioState === 1) {
-        // Velocidad del arpegio (fija a 150ms o podría mapearse a un knob visual)
-        const arpSpeed = 0.15; // seg
-
-        if (now - arpLastTime > arpSpeed) {
-            arpStep++;
-            arpLastTime = now;
-        }
-
-        // ¿Hacia dónde saltamos? Direction + o -
-        let jumpDirection = continuousJump >= 0 ? 1 : -1;
-        // Cuántos saltos máximos (0 a 10)
-        // Usamos Math.ceil para que NO haya zona muerta en el centro.
-        // Además, obligamos a que siempre haya al menos 1 paso de movimiento musical
-        // para evitar que el arpegio se "congele" en una nota sola en el medio.
-        let maxSteps = Math.max(1, Math.ceil(Math.abs(continuousJump)));
-
-        // Si maxSteps es 0, repetimos la misma nota principal
-        let activeIndex = baseIndex;
-
-        if (maxSteps > 0) {
-            // Ciclo de ida y vuelta (Arpegio Up/Down o Down/Up)
-            // Longitud total del ciclo: si sube 4 notas, el ciclo es 0,1,2,3,4,3,2,1 -> 8 pasos
-            let cycleLength = maxSteps * 2;
-            let seqPos = arpStep % cycleLength;
-
-            // Calculamos en qué paso del arpegio estamos
-            let stepOffset = (seqPos <= maxSteps) ? seqPos : (cycleLength - seqPos);
-
-            activeIndex = baseIndex + (stepOffset * jumpDirection);
-        }
-
-        // Clamping seguro
-        activeIndex = Math.max(0, Math.min(activeIndex, currentScale.length - 1));
-        finalPitch = currentScale[activeIndex];
-
-        // Cambio instantáneo para efecto "secuenciador", no portamento
-        T_pitch = 0.01;
     }
 
     // --- LAYER 3 & EFFECTS (Y axis / MOUSE VERTICAL POSITION) ---
@@ -1437,18 +1440,15 @@ function toggleAudio() {
     if (seqPanel) seqPanel.classList.add('is-collapsed');
 
     if (audioState === 1) {
-        // STATE 1: SINTETIZADOR ARPEGIADOR
+        // STATE 1: GRID SEQUENCER (Pentagrama visual)
         audioEnabled = true;
 
-        // Detenemos el sample si venía sonando
         stopSamplePlayback();
-
-        // Prendemos los osciladores sintéticos
         if (synthGain) synthGain.gain.setValueAtTime(1, audioCtx.currentTime);
 
         btn.classList.add('is-active');
         iconEl.textContent = '1';
-        btn.setAttribute('aria-label', 'Cambiar a Secuenciador Gráfico');
+        btn.setAttribute('aria-label', 'Cambiar a Arpegiador');
 
         if (controlsPanel) {
             controlsPanel.classList.add('is-visible');
@@ -1456,11 +1456,16 @@ function toggleAudio() {
             controlsPanel.classList.remove('is-sample');
         }
 
+        if (seqToggleBtn) seqToggleBtn.style.display = 'flex';
+
     } else if (audioState === 2) {
-        // STATE 2: GRID SEQUENCER (Pentagrama visual)
+        // STATE 2: SINTETIZADOR ARPEGIADOR
         audioEnabled = true;
 
+        // Detenemos el sample si venía sonando
         stopSamplePlayback();
+
+        // Prendemos los osciladores sintéticos
         if (synthGain) synthGain.gain.setValueAtTime(1, audioCtx.currentTime);
 
         btn.classList.add('is-active');
@@ -1472,8 +1477,6 @@ function toggleAudio() {
             controlsPanel.classList.add('is-synth');
             controlsPanel.classList.remove('is-sample');
         }
-
-        if (seqToggleBtn) seqToggleBtn.style.display = 'flex';
 
     } else if (audioState === 3) {
         // STATE 3: AIRWOLF THEME SEQUENCER
@@ -2528,3 +2531,165 @@ document.addEventListener('visibilitychange', () => {
         }
     }
 });
+
+// ==========================================================================
+//   *** PANEL TEMPORAL: Control ícono menú ripple ***
+// ==========================================================================
+(function () {
+    const panel  = document.getElementById('ripple-nav-controls');
+    const toggle = document.getElementById('ripple-nav-ctrl-toggle');
+    if (!panel || !toggle) return;
+
+    // --- Toggle collapse/expand ---
+    toggle.addEventListener('click', () => {
+        const collapsed = panel.classList.toggle('is-collapsed');
+        toggle.textContent = collapsed ? '−' : '+';
+    });
+
+    // --- Dynamic <style> tag for keyframe overrides ---
+    let dynStyle = document.getElementById('ripple-dyn-style');
+    if (!dynStyle) {
+        dynStyle = document.createElement('style');
+        dynStyle.id = 'ripple-dyn-style';
+        document.head.appendChild(dynStyle);
+    }
+
+    // Live config — mirrors slider defaults
+    const cfg = {
+        count:       8,
+        speed:       3.0,
+        delay:       0.10,
+        scaleFrom:   0.95,
+        scaleTo:     1.20,
+        opacity:     0.95,
+        stroke:      1.0,
+        irregularity: 0.15,
+    };
+
+    // --- Organic path generator ---
+    // Samples N polar points around center (cx,cy) at radius r,
+    // adds multi-harmonic distortion controlled by `irregularity`,
+    // then connects them with Catmull-Rom cubic bezier curves.
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const CX = 24, CY = 24;
+
+    function distortedR(baseR, angle, irr, harmonics, phase) {
+        if (irr < 0.001) return baseR;
+        const amp = baseR * irr * 0.28;
+        return baseR
+            + amp * (0.6 * Math.sin(harmonics * angle + phase)
+                   + 0.4 * Math.sin((harmonics + 2) * angle + phase * 1.7));
+    }
+
+    function buildPath(baseR, irr, ringIdx, numPts = 40) {
+        const phase     = ringIdx * 2.399;           // golden-angle offset per ring
+        const harmonics = 2 + (ringIdx % 3);         // 2, 3 or 4 harmonics
+        const pts = [];
+
+        for (let i = 0; i < numPts; i++) {
+            const angle = (i / numPts) * Math.PI * 2 - Math.PI / 2;
+            const r = distortedR(baseR, angle, irr, harmonics, phase);
+            pts.push({ x: CX + r * Math.cos(angle), y: CY + r * Math.sin(angle) });
+        }
+
+        // Catmull-Rom → cubic bezier (closed)
+        const n = pts.length;
+        const T = 0.4; // tension
+        let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+
+        for (let i = 0; i < n; i++) {
+            const p0 = pts[(i - 1 + n) % n];
+            const p1 = pts[i];
+            const p2 = pts[(i + 1) % n];
+            const p3 = pts[(i + 2) % n];
+            const cp1x = p1.x + (p2.x - p0.x) * T;
+            const cp1y = p1.y + (p2.y - p0.y) * T;
+            const cp2x = p2.x - (p3.x - p1.x) * T;
+            const cp2y = p2.y - (p3.y - p1.y) * T;
+            d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+        }
+        return d + ' Z';
+    }
+
+    // Easing variants — cycle through rings
+    const EASINGS = [
+        'cubic-bezier(0.2,0.6,0.4,1)',
+        'cubic-bezier(0.3,0.0,0.6,0.9)',
+        'cubic-bezier(0.1,0.8,0.3,1)',
+        'cubic-bezier(0.4,0.1,0.5,1)',
+    ];
+
+    // --- Build / rebuild all ring elements ---
+    function buildRings() {
+        const svgEl = document.querySelector('.nav-ripple-icon');
+        if (!svgEl) return;
+
+        // Clear existing rings
+        svgEl.querySelectorAll('.nav-ripple').forEach(el => el.remove());
+
+        const count  = cfg.count;
+        const minR   = 5, maxR = 22;
+
+        for (let i = 0; i < count; i++) {
+            // Distribute radii evenly from inner to outer
+            const r = count === 1
+                ? (minR + maxR) / 2
+                : minR + (maxR - minR) * (i / (count - 1));
+
+            // Stroke tapers toward outer rings
+            const sw = (cfg.stroke * (1.2 - (i / Math.max(count - 1, 1)) * 0.5)).toFixed(2);
+
+            const el = document.createElementNS(SVG_NS, 'path');
+            el.setAttribute('class', 'nav-ripple');
+            el.setAttribute('fill', 'none');
+            el.setAttribute('stroke', 'currentColor');
+            el.setAttribute('stroke-width', sw);
+            el.setAttribute('d', buildPath(r, cfg.irregularity, i));
+
+            // Each ring slightly faster than the previous (staggered tempo)
+            const dur   = cfg.speed * (1 + i * 0.25);
+            const delay = cfg.delay * i;
+            el.style.animation = `rippleRing ${dur}s ${EASINGS[i % EASINGS.length]} ${delay}s infinite`;
+
+            svgEl.appendChild(el);
+        }
+
+        // Update keyframe override (scale + opacity)
+        dynStyle.textContent = `
+@keyframes rippleRing {
+    0%   { transform: scale(${cfg.scaleFrom}); opacity: 0; }
+    12%  { opacity: ${cfg.opacity}; }
+    65%  { opacity: ${(cfg.opacity * 0.35).toFixed(3)}; }
+    100% { transform: scale(${cfg.scaleTo}); opacity: 0; }
+}`;
+    }
+
+    // --- Wire a slider ---
+    function wire(id, valId, key, unit, decimals, isInt) {
+        const slider = document.getElementById(id);
+        const valEl  = document.getElementById(valId);
+        if (!slider || !valEl) return;
+        slider.addEventListener('input', () => {
+            cfg[key] = isInt ? parseInt(slider.value) : parseFloat(slider.value);
+            valEl.textContent = isInt
+                ? slider.value
+                : parseFloat(slider.value).toFixed(decimals) + unit;
+            buildRings();
+        });
+    }
+
+    wire('rnc-count',       'val-rnc-count',       'count',       '',   0, true);
+    wire('rnc-speed',       'val-rnc-speed',       'speed',       's',  1, false);
+    wire('rnc-delay',       'val-rnc-delay',       'delay',       's',  2, false);
+    wire('rnc-scale-from',  'val-rnc-scale-from',  'scaleFrom',   '',   2, false);
+    wire('rnc-scale-to',    'val-rnc-scale-to',    'scaleTo',     '',   2, false);
+    wire('rnc-opacity',     'val-rnc-opacity',      'opacity',     '',   2, false);
+    wire('rnc-stroke',      'val-rnc-stroke',      'stroke',      'px', 1, false);
+    wire('rnc-irregularity','val-rnc-irregularity','irregularity','',   2, false);
+
+    // Initial build
+    buildRings();
+})();
+// ==========================================================================
+//   *** FIN PANEL TEMPORAL ***
+// ==========================================================================
